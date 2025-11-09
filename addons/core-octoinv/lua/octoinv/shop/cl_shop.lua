@@ -219,12 +219,12 @@ function octoinv.createShop()
 				end
 				p_basket:UpdateData()
 			end)
-		end):SetIcon('icon16/chart_bar.png')
+		end):SetIcon(octolib.icons.silk16('statistics'))
 
 		menu:AddOption(L.delete, function()
 			basket[line.itemID] = nil
 			p_basket:UpdateData()
-		end):SetIcon('icon16/delete.png')
+		end):SetIcon(octolib.icons.silk16('delete'))
 
 		menu:Open()
 	end
@@ -265,7 +265,7 @@ function octoinv.createShop()
 		cbReceiver:Clear()
 		local resetReceiver = true
 		for i, ply in ipairs(player.GetAll()) do
-			if FPP.Buddies[ply:SteamID()] ~= nil and ply:Alive() and not ply:GetNetVar('Ghost') and ply ~= lp then
+			if FPP.Buddies[ply:SteamID()] ~= nil and ply:Alive() and not ply:IsGhost() and ply ~= lp then
 				cbReceiver:AddChoice(ply:Name(), ply, ply == receiver)
 				if ply == receiver then resetReceiver = false end
 			end
@@ -344,19 +344,19 @@ function octoinv.createShop()
 				end
 				p_basket:UpdateData()
 			end)
-		end):SetIcon('icon16/add.png')
+		end):SetIcon(octolib.icons.silk16('cart_add'))
 
 		if basket[node.itemID] then
 			menu:AddOption(L.delete_from_basket, function()
 				basket[node.itemID] = nil
 				p_basket:UpdateData()
-			end):SetIcon('icon16/delete.png')
+			end):SetIcon(octolib.icons.silk16('delete'))
 		end
 
 		if node.item.model then
 			menu:AddOption(L.preview, function()
 				openPreview(node.item)
-			end):SetIcon('icon16/zoom.png')
+			end):SetIcon(octolib.icons.silk16('zoom'))
 		end
 
 		menu:Open()
@@ -366,7 +366,7 @@ function octoinv.createShop()
 		self:Clear()
 		if not shopcache then
 			local catNode = self:AddNode(L.loading)
-			catNode:SetIcon('octoteam/icons/sandwatch.png')
+			catNode:SetIcon(octolib.icons.silk16('hourglass'))
 			return
 		end
 
@@ -407,7 +407,7 @@ function octoinv.createShop()
 
 		if addedTotal < 1 then
 			local catNode = self:AddNode(L.not_found)
-			catNode:SetIcon('octoteam/icons/error.png')
+			catNode:SetIcon(octolib.icons.silk16('error'))
 		end
 	end
 
@@ -422,7 +422,7 @@ function octoinv.createShop()
 	function search:OnValueChange(val)
 		shopTree:UpdateData(val)
 	end
-	shopTab = ps:AddSheet(L.shop, p_shop, 'octoteam/icons/shop.png')
+	shopTab = ps:AddSheet(L.shop, p_shop, octolib.icons.silk16('shop'))
 	shopTab.Tab.Image:SetSize(16, 16)
 	shopTab.Tab:InvalidateLayout()
 
@@ -488,21 +488,21 @@ function octoinv.createShop()
 										'Да', function() fldRename(thisFld, name) end, 'Нет')
 					else fldRename(thisFld, name) end
 				end, nil, 'Переименовать', 'Отмена')
-			end):SetIcon('icon16/pencil.png')
+			end):SetIcon(octolib.icons.silk16('report_edit'))
 
 			if table.Count(foldercache) > 1 then
 				local move, moveOpt = menu:AddSubMenu('Переместить содержимое')
-				moveOpt:SetIcon('icon16/door_in.png')
+				moveOpt:SetIcon(octolib.icons.silk16('move_to_folder'))
 				for fld in pairs(foldercache) do
-					if fld ~= thisFld then move:AddOption(fld, function() fldRename(thisFld, fld) end):SetIcon('icon16/folder.png') end
+					if fld ~= thisFld then move:AddOption(fld, function() fldRename(thisFld, fld) end):SetIcon(octolib.icons.silk16('folder')) end
 				end
 			end
 
-			menu:AddOption('Экспорт папки', function() fldExport(thisFld) end):SetIcon('icon16/page_go.png')
+			menu:AddOption('Экспорт папки', function() fldExport(thisFld) end):SetIcon(octolib.icons.silk16('script_export'))
 
 			menu:AddOption('Удалить папку', function()
 				Derma_Query('Точно хочешь удалить папку?\nЭто действие нельзя отменить', 'Удаление папки', 'Да', function() fldRemove(thisFld) end, 'Нет')
-			end):SetIcon('icon16/delete.png')
+			end):SetIcon(octolib.icons.silk16('delete'))
 
 			menu:Open()
 		end
@@ -537,13 +537,13 @@ function octoinv.createShop()
 					end
 					p_basket:UpdateData()
 				end)
-			end):SetIcon('icon16/add.png')
+			end):SetIcon(octolib.icons.silk16('cart_add'))
 
 		end
 
 		local move,moveOpt = menu:AddSubMenu('Переместить')
 		local curFld = presetcache[node.presetID].folder or 'Несортированные'
-		moveOpt:SetIcon('icon16/door_in.png')
+		moveOpt:SetIcon(octolib.icons.silk16('move_to_folder'))
 		move:AddOption('Новая папка', function()
 			Derma_StringRequest('Создание новой папки', 'Укажи название папки', curFld, function(folder)
 				if (folder == curFld) or (folder == '') then return end
@@ -552,7 +552,7 @@ function octoinv.createShop()
 				file.Write('octoinv/shop_presets.dat', pon.encode(presetcache))
 				presetTree:UpdateData()
 			end)
-		end):SetIcon('icon16/folder_add.png')
+		end):SetIcon(octolib.icons.silk16('folder_add'))
 		for fld in pairs(foldercache) do
 			if fld ~= curFld then
 				move:AddOption(fld, function()
@@ -560,7 +560,7 @@ function octoinv.createShop()
 					changed = true
 					file.Write('octoinv/shop_presets.dat', pon.encode(presetcache))
 					presetTree:UpdateData()
-				end):SetIcon('icon16/folder.png')
+				end):SetIcon(octolib.icons.silk16('foвlder'))
 			end
 		end
 
@@ -572,12 +572,12 @@ function octoinv.createShop()
 				file.Write('octoinv/shop_presets.dat', pon.encode(presetcache))
 				presetTree:UpdateData()
 			end, nil, L.rename, L.cancel)
-		end):SetIcon('icon16/pencil.png')
+		end):SetIcon(octolib.icons.silk16('report_edit'))
 
 		menu:AddOption(L.export_kit, function()
 			SetClipboardText(pon.encode(presetcache[node.presetID]))
 			octolib.notify.show('hint', L.export_kit_hint)
-		end):SetIcon('icon16/page_go.png')
+		end):SetIcon(octolib.icons.silk16('script_export'))
 
 		menu:AddOption(L.delete_kit, function()
 			table.remove(presetcache, node.presetID)
@@ -585,7 +585,7 @@ function octoinv.createShop()
 			file.Write('octoinv/shop_presets.dat', pon.encode(presetcache))
 
 			presetTree:UpdateData()
-		end):SetIcon('icon16/delete.png')
+		end):SetIcon(octolib.icons.silk16('delete'))
 
 		menu:Open()
 	end
@@ -607,7 +607,7 @@ function octoinv.createShop()
 			for itemID, amount in pairs(preset.items) do
 				local item = itemData[itemID]
 				if not item then
-					item = { name = L.unavailable_item, icon = 'octoteam/icons/error.png', price = 0 }
+					item = { name = L.unavailable_item, icon = octolib.icons.silk16('error'), price = 0 }
 					presetNode.invalid = true
 				end
 				if amount <= 0 then
@@ -621,10 +621,10 @@ function octoinv.createShop()
 
 			if not presetNode.invalid then
 				presetNode:SetText(preset.name .. ' - ' .. DarkRP.formatMoney(price))
-				presetNode:SetIcon('octoteam/icons/blueprint.png')
+				presetNode:SetIcon(octolib.icons.silk16('document_copies'))
 			else
 				presetNode:SetText(preset.name .. L.octoinv_unavailable)
-				presetNode:SetIcon('octoteam/icons/error.png')
+				presetNode:SetIcon(octolib.icons.silk16('error'))
 			end
 			presetNode.presetID = presetID
 		end
@@ -638,7 +638,7 @@ function octoinv.createShop()
 		local data = shopcache
 		if not data then
 			local catNode = self:AddNode(L.loading)
-			catNode:SetIcon('octoteam/icons/sandwatch.png')
+			catNode:SetIcon(octolib.icons.silk16('hourglass'))
 			return
 		end
 
@@ -726,7 +726,7 @@ function octoinv.createShop()
 		end, nil, L.ok, L.cancel)
 	end
 
-	presetTab = ps:AddSheet(L.my_kits, p_preset, 'octoteam/icons/blueprint.png')
+	presetTab = ps:AddSheet(L.my_kits, p_preset, octolib.icons.silk16('document_copies'))
 	presetTab.Tab.Image:SetSize(16, 16)
 	presetTab.Tab:InvalidateLayout()
 
@@ -792,7 +792,7 @@ function octoinv.createShop()
 
 			local icon = pnl:Add 'DImage'
 			icon:SetMouseInputEnabled(false)
-			icon:SetImage('icon16/tick.png')
+			icon:SetImage(octolib.icons.silk16('tick'))
 			icon:SetSize(16, 16)
 			icon:AlignRight(4)
 			icon:AlignTop(2)
