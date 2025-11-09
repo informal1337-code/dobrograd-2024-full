@@ -1,76 +1,67 @@
 local allowedModels = {
-	['models/humans/modern/female_01.mdl'] = {20},
-	['models/humans/modern/female_02.mdl'] = {6,21},
-	['models/humans/modern/female_03.mdl'] = {6,21},
-	['models/humans/modern/female_04.mdl'] = {6,21},
-	['models/humans/modern/female_06.mdl'] = {6,21},
-	['models/humans/modern/female_07.mdl'] = {6,21},
-	['models/humans/modern/male_01_01.mdl'] = true,
-	['models/humans/modern/male_01_02.mdl'] = true,
-	['models/humans/modern/male_01_03.mdl'] = true,
-	['models/humans/modern/male_02_01.mdl'] = true,
-	['models/humans/modern/male_02_02.mdl'] = true,
-	['models/humans/modern/male_02_03.mdl'] = true,
-	['models/humans/modern/male_03_01.mdl'] = true,
-	['models/humans/modern/male_03_02.mdl'] = true,
-	['models/humans/modern/male_03_03.mdl'] = true,
-	['models/humans/modern/male_03_04.mdl'] = true,
-	['models/humans/modern/male_03_05.mdl'] = true,
-	['models/humans/modern/male_03_06.mdl'] = true,
-	['models/humans/modern/male_03_07.mdl'] = true,
-	['models/humans/modern/male_04_01.mdl'] = true,
-	['models/humans/modern/male_04_02.mdl'] = true,
-	['models/humans/modern/male_04_03.mdl'] = true,
-	['models/humans/modern/male_04_04.mdl'] = true,
-	['models/humans/modern/male_05_01.mdl'] = true,
-	['models/humans/modern/male_05_02.mdl'] = true,
-	['models/humans/modern/male_05_03.mdl'] = true,
-	['models/humans/modern/male_05_04.mdl'] = true,
-	['models/humans/modern/male_05_05.mdl'] = true,
-	['models/humans/modern/male_06_01.mdl'] = true,
-	['models/humans/modern/male_06_02.mdl'] = true,
-	['models/humans/modern/male_06_03.mdl'] = true,
-	['models/humans/modern/male_06_04.mdl'] = true,
-	['models/humans/modern/male_06_05.mdl'] = true,
-	['models/humans/modern/male_07_01.mdl'] = true,
-	['models/humans/modern/male_07_02.mdl'] = true,
-	['models/humans/modern/male_07_03.mdl'] = true,
-	['models/humans/modern/male_07_04.mdl'] = true,
-	['models/humans/modern/male_07_05.mdl'] = true,
-	['models/humans/modern/male_07_06.mdl'] = true,
-	['models/humans/modern/male_08_01.mdl'] = true,
-	['models/humans/modern/male_08_02.mdl'] = true,
-	['models/humans/modern/male_08_03.mdl'] = true,
-	['models/humans/modern/male_08_04.mdl'] = true,
-	['models/humans/modern/male_09_01.mdl'] = true,
-	['models/humans/modern/male_09_02.mdl'] = true,
-	['models/humans/modern/male_09_03.mdl'] = true,
-	['models/humans/modern/male_09_04.mdl'] = true,
+    ['models/humans/octo/female_01.mdl'] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,21,22,23,24,25,26,27,28,29},
+    ['models/humans/octo/female_02.mdl'] = {0,1,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,22,23,24,25,26,27,28,29,30},
+    ['models/humans/octo/female_03.mdl'] = {0,1,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,22,23,24,25,26,27,28,29,30},
+    ['models/humans/octo/female_04.mdl'] = {0,1,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,22,23,24,25,26,27,28,29,30},
+    ['models/humans/octo/female_06.mdl'] = {0,1,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,22,23,24,25,26,27,28,29,30},
+    ['models/humans/octo/female_07.mdl'] = {0,1,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,22,23,24,25,26,27,28,29,30},
+    ['models/humans/octo/male_01_01.mdl'] = {0,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,22,23},
+    ['models/humans/octo/male_02_01.mdl'] = {0,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,22,23},
+    ['models/humans/octo/male_03_01.mdl'] = {0,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,22,23},
+    ['models/humans/octo/male_04_01.mdl'] = {0,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,22,23},
+    ['models/humans/octo/male_05_01.mdl'] = {0,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,22,23},
+    ['models/humans/octo/male_06_01.mdl'] = {0,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,22,23},
+    ['models/humans/octo/male_07_01.mdl'] = {0,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,22,23},
+    ['models/humans/octo/male_08_01.mdl'] = {0,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,22,23},
+    ['models/humans/octo/male_09_01.mdl'] = {0,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,22,23},
 }
 netstream.Hook('dbg-characters.savePresets', function(ply, presets)
-	if not presets then return end
-	
-	local maxPresets = ply:IsPremium() and 10 or 3
-	if #presets > maxPresets then
-		ply:Notify('warning', 'Превышен лимит сохраненных персонажей')
-		return
-	end
-	
-	for _, preset in ipairs(presets) do
-		if not allowedModels[preset.model] then
-			ply:Notify('warning', 'Недопустимая модель в пресете')
-			return
-		end
-		
-		if preset.skin and (preset.skin < 0 or preset.skin > getSkinCount(preset.model)) then
-			ply:Notify('warning', 'Недопустимый скин в пресете')
-			return
-		end
-	end
-	
-	ply.presets = presets
+    if not presets then return end
+    
+    local maxPresets = ply:IsPremium() and 10 or 3
+    if #presets > maxPresets then
+        ply:Notify('warning', 'Превышен лимит сохраненных персонажей')
+        return
+    end
+    
+    for _, preset in ipairs(presets) do
+        if not allowedModels[preset.model] then
+            ply:Notify('warning', 'Недопустимая модель в пресете: ' .. tostring(preset.model))
+            return
+        end
+        
+        local skinData = allowedModels[preset.model]
+        if preset.skin and skinData ~= true and not table.HasValue(skinData, preset.skin) then
+            ply:Notify('warning', 'Недопустимый скин в пресете')
+            return
+        end
+    end
+    
+    ply.presets = presets
 end)
 
+hook.Add('PlayerInitialSpawn', 'dbg-char.initialSetup', function(ply)
+    timer.Simple(5, function()
+        if not IsValid(ply) then return end
+        
+        local name = ply:GetInfo('dbgChars.name')
+        local model = ply:GetInfo('dbgChars.model')
+        
+        if not name or name == '' or not model or model == '' then
+            local randomModel, randomSkin = getRandomModel(models)
+            local randomName = getName(randomModel)
+            
+            ply:ConCommand('dbgChars.name "' .. randomName .. '"')
+            ply:ConCommand('dbgChars.model "' .. randomModel .. '"')
+            ply:ConCommand('dbgChars.skin "' .. randomSkin .. '"')
+            ply:ConCommand('dbgChars.job "citizen"')
+            
+            print('[CHAR] Created default character for ' .. ply:SteamID() .. ': ' .. randomName)
+        end
+    end)
+end)
+local models = table.GetKeys(allowedModels)
+PrintTable(models)
 netstream.Hook('dbg-characters.getPresets', function(ply)
 	netstream.Start(ply, 'dbg-characters.getPresets', ply.presets or {})
 end)
@@ -94,9 +85,10 @@ hook.Add('CanChangeRPName', 'dbg-char', playerCanChangeName)
 local storedHealth, storedHunger = {}, {}
 
 local function getName(mdl)
-	local gender = octolib.models.isMale(mdl) and names.male or names.female
-	local name, surname = gender[math.random(#gender)], names.surnames[math.random(#names.surnames)]
-	return ('%s %s'):format(name, surname)
+    local isMale = string.StartWith(mdl, 'models/humans/octo/male')
+    local gender = isMale and names.male or names.female
+    local name, surname = gender[math.random(#gender)], names.surnames[math.random(#names.surnames)]
+    return ('%s %s'):format(name, surname)
 end
 
 local function getSkinCount(mdl)
@@ -107,176 +99,239 @@ local function getSkinCount(mdl)
 	return modelInfo.SkinCount - 1
 end
 
+local function getRandomModel()
+    local model = models[math.random(#models)]
+    local skinData = allowedModels[model]
+    local skin
+    
+    if skinData == true then
+        skin = math.random(0, getSkinCount(model))
+    else
+        skin = skinData[math.random(#skinData)]
+    end
+    
+    return model, skin
+end
+local function getSkinCount(mdl)
+    local modelInfo = util.GetModelInfo(mdl)
+    if not modelInfo then
+        return 0
+    end
+    return modelInfo.SkinCount - 1
+end
+
 local function getRandomModel(mdls)
-	local mdl = mdls[math.random(#mdls)]
-	local skin = math.random(0, getSkinCount(mdl))
-	return mdl, skin
+    local mdl = mdls[math.random(#mdls)]
+    local skin = math.random(0, getSkinCount(mdl))
+    return mdl, skin
+end
+
+local function getName(mdl)
+    local gender = octolib.models.isMale(mdl) and names.male or names.female
+    local name, surname = gender[math.random(#gender)], names.surnames[math.random(#names.surnames)]
+    return ('%s %s'):format(name, surname)
+end
+local function spawnPlayer(ply)
+    timer.Remove('dbg-char.disconnect' .. ply:SteamID())
+
+    if not ply.passedTest then return end
+
+    local he = not ply.died and storedHealth[ply:SteamID()] or 100
+    local hu = not ply.died and storedHunger[ply:SteamID()] or 100
+    
+    timer.Simple(2, function()
+        if not IsValid(ply) then return end
+
+        -- Получаем выбранный пресет
+        local selectedPreset = ply:GetNetVar('SelectedPreset')
+        
+        -- Если выбран пресет, используем его данные
+        if selectedPreset then
+            applyPresetAppearance(ply, selectedPreset)
+            
+            local name = selectedPreset.name
+            local jobCmd = selectedPreset.jobCmd or 'citizen'
+            local desc = selectedPreset.desc
+
+            local job, jobID = DarkRP.getJobByCommand(jobCmd)
+            if not job or job.noPreference or (job.customCheck and (not job.customCheck(ply))) then
+                job, jobID = DarkRP.getJobByCommand('citizen')
+            end
+
+            if ply:Team() ~= jobID then
+                ply:changeTeam(jobID, true, true)
+            end
+
+            ply:SetName(name)
+            ply:SetSalary(job.salary)
+            
+            if desc and desc ~= '' then
+                ply:SetNetVar('dbgDesc', desc)
+            end
+            
+            ply:Notify('hint', 'Персонаж "' .. name .. '" успешно применен')
+        else
+            -- Иначе используем данные из консольных переменных или создаем случайные
+            local name = ply:GetInfo('dbgChars.name')
+            local model = ply:GetInfo('dbgChars.model')
+            local skin = tonumber(ply:GetInfo('dbgChars.skin') or '0') or 0
+            local face = ply:GetInfo('dbgChars.face') or ''
+            local jobCmd = ply:GetInfo('dbgChars.job') or 'citizen'
+            local desc = ply:GetInfo('dbgChars.desc') or ''
+            
+            -- Проверяем, есть ли валидные данные
+            local hasValidData = name and name ~= '' and model and model ~= '' and allowedModels[model]
+            
+            if not hasValidData then
+                -- Создаем случайного персонажа
+                model, skin = getRandomModel(models)
+                name = getName(model)
+                
+                -- Устанавливаем консольные переменные на сервере
+                ply:ConCommand('dbgChars.name "' .. name .. '"')
+                ply:ConCommand('dbgChars.model "' .. model .. '"')
+                ply:ConCommand('dbgChars.skin "' .. skin .. '"')
+                ply:ConCommand('dbgChars.job "citizen"')
+                ply:ConCommand('dbgChars.desc ""')
+                
+                ply:Notify('hint', 'Создан новый персонаж: ' .. name)
+            end
+
+            -- Валидация модели
+            local ok = allowedModels[model]
+            if not ok or not util.IsValidModel(model) then
+                model, skin = getRandomModel(models)
+                ply:ConCommand('dbgChars.model "' .. model .. '"')
+                ply:ConCommand('dbgChars.skin "' .. skin .. '"')
+            end
+
+            -- Валидация скина
+            if skin < 0 or skin > getSkinCount(model) or (istable(ok) and not table.HasValue(ok, skin)) then
+                skin = 0
+                ply:ConCommand('dbgChars.skin "0"')
+            end
+
+            -- Валидация работы
+            local job, jobID = DarkRP.getJobByCommand(jobCmd)
+            if not job or job.noPreference or (job.customCheck and (not job.customCheck(ply))) then
+                job, jobID = DarkRP.getJobByCommand('citizen')
+                ply:ConCommand('dbgChars.job citizen')
+            end
+
+            -- Валидация имени
+            name = string.Trim(octolib.string.camel(octolib.string.stripNonWord(name)))
+            if name == '' then
+                name = getName(model)
+                ply:ConCommand('dbgChars.name "' .. name .. '"')
+            end
+            
+            name = utf8.sub(name, 1, 35)
+            if not string.find(name, ' ') then
+                ply:Notify('warning', 'Твое имя указано без фамилии. Создан новый персонаж')
+                name = getName(model)
+                ply:ConCommand('dbgChars.name "' .. name .. '"')
+            end
+
+            -- Применяем настройки
+            if ply:Name() ~= name then
+                ply:SetName(name)
+            end
+
+            if ply:Team() ~= jobID then
+                ply:changeTeam(jobID, true, true)
+            end
+
+            ply:SetCanZoom(false)
+            ply:SetModel(model)
+            ply:SetSkin(skin)
+            
+            -- Применяем текстуру лица если указана
+            if face and face ~= '' then
+                for i, mat in ipairs(ply:GetMaterials()) do
+                    if string.match(mat, '.+/sheet_%d+') then
+                        ply:SetSubMaterial(i-1, face)
+                    end
+                end
+            else
+                -- Иначе сбрасываем все текстуры лица
+                for i, mat in ipairs(ply:GetMaterials()) do
+                    if string.match(mat, '.+/sheet_%d+') then
+                        ply:SetSubMaterial(i-1, nil)
+                    end
+                end
+            end
+
+            if desc == '' then desc = nil end
+            ply:SetNetVar('dbgDesc', desc)
+            ply:SetSalary(job.salary)
+        end
+
+        ply:SetNetVar('dbgLook', {
+            name = 'playerName',
+            nameRender = true,
+            desc = 'playerDesc',
+            descRender = true,
+            checkLoader = 'playerLoader',
+            time = 0.75,
+            bone = 'ValveBiped.Bip01_Head1',
+            posAbs = Vector(0, 0, 10),
+            lookOff = Vector(0, -100, 0),
+        })
+
+        timer.Simple(0, function()
+            if IsValid(ply) then ply:SetHealth(he) end
+        end)
+        ply:SetLocalVar('Energy', hu)
+
+        ply.SaveCharState = ply.SaveCharState or octolib.func.debounceEnd(function(self)
+            if not IsValid(self) then return end
+            storedHealth[self:SteamID()] = math.floor(self:Health())
+            storedHunger[self:SteamID()] = math.floor(self:GetNetVar('Energy'))
+        end, 3)
+
+        if not ply.inTown then
+            local txt = ply:Name() .. ' (' .. tostring(ply:GetInfo('dbgChars.name')) .. ')' .. L.arrive_in_town
+            print('[LOG] ' .. txt)
+
+            ply.inTown = true
+            hook.Run('dbg-char.firstSpawn', ply)
+        end
+
+        hook.Run('dbg-char.spawn', ply)
+    end)
 end
 
 local function applyPresetAppearance(ply, preset)
-	if not preset then return end
-	
-	ply:SetModel(preset.model)
-	ply:SetSkin(preset.skin or 0)
+    if not preset then return end
+    
+    ply:SetModel(preset.model)
+    ply:SetSkin(preset.skin or 0)
 
-	if preset.face then
-		for i, mat in ipairs(ply:GetMaterials()) do
-			if string.match(mat, '.+/sheet_%d+') then
-				ply:SetSubMaterial(i-1, preset.face)
-			end
-		end
-	end
+    -- Сбрасываем все текстуры лица сначала
+    for i = 0, ply:GetNumMaterials() - 1 do
+        local mat = ply:GetMaterial(i)
+        if mat and string.match(mat, 'facemap') then
+            ply:SetSubMaterial(i, '')
+        end
+    end
 
-	if preset.voice then
-		ply:SetNetVar('Voice', preset.voice)
-	end
+    if preset.face and preset.face ~= '' then
+        for i = 0, ply:GetNumMaterials() - 1 do
+            local mat = ply:GetMaterial(i)
+            if mat and string.match(mat, 'facemap') then
+                ply:SetSubMaterial(i, preset.face)
+                break
+            end
+        end
+    end
 
-	if preset.desc then
-		ply:SetNetVar('dbgDesc', preset.desc)
-	end
-end
+    if preset.voice then
+        ply:SetNetVar('Voice', preset.voice)
+    end
 
-local function spawnPlayer(ply)
-	timer.Remove('dbg-char.disconnect' .. ply:SteamID())
-
-	if not ply.passedTest then return end
-
-	local he = not ply.died and storedHealth[ply:SteamID()] or 100
-	local hu = not ply.died and storedHunger[ply:SteamID()] or 100
-	
-	timer.Simple(2, function()
-		if not IsValid(ply) then return end
-
-		local selectedPreset = ply:GetNetVar('SelectedPreset')
-		
-		-- Если выбран пресет, используем его данные
-		if selectedPreset then
-			applyPresetAppearance(ply, selectedPreset)
-			
-			local name = selectedPreset.name
-			local jobCmd = selectedPreset.jobCmd or 'citizen'
-			local desc = selectedPreset.desc
-
-			local job, jobID = DarkRP.getJobByCommand(jobCmd)
-			if not job or job.noPreference or (job.customCheck and (not job.customCheck(ply))) then
-				job, jobID = DarkRP.getJobByCommand('citizen')
-			end
-
-			if ply:Team() ~= jobID then
-				ply:changeTeam(jobID, true, true)
-			end
-
-			ply:SetName(name)
-			ply:SetSalary(job.salary)
-			
-			if desc and desc ~= '' then
-				ply:SetNetVar('dbgDesc', desc)
-			end
-		else
-			-- Иначе используем данные из консольных переменных
-			local name = ply:GetInfo('dbgChars.name') or L.name_and_surname
-			local model = ply:GetInfo('dbgChars.model') or models[math.random(#models)]
-			local skin = tonumber(ply:GetInfo('dbgChars.skin') or '0') or math.random(0, getSkinCount(model))
-			local face = ply:GetInfo('dbgChars.face') or ''
-			local jobCmd = ply:GetInfo('dbgChars.job') or 'citizen'
-			
-			ply:GetClientVar({'dbgChars.desc'}, function(vars)
-				local desc = utf8.sub(vars.dbgChars.desc or '', 1, 350)
-				desc = string.Trim(octolib.string.stripNonWord(desc, ',:%.0-9-;%(%)%/%"%\'a-zA-Z'))
-
-				local ok = allowedModels[model]
-				if not ok or not util.IsValidModel(model) then
-					model, skin = getRandomModel(models)
-				end
-
-				if skin < 0 or skin > getSkinCount(model) or (istable(ok) and table.HasValue(ok, skin)) then
-					skin = 0
-				end
-
-				local job, jobID = DarkRP.getJobByCommand(jobCmd)
-				if not job or job.noPreference or (job.customCheck and (not job.customCheck(ply))) then
-					job, jobID = DarkRP.getJobByCommand('citizen')
-					ply:ConCommand('dbgChars.job ' .. job.command)
-				end
-
-				name = string.Trim(octolib.string.camel(octolib.string.stripNonWord(name)))
-				if name == L.name_and_surname or name == '' then
-					name = getName(model)
-					ply:ConCommand('dbgChars.name "' .. name .. '"')
-				end
-				name = utf8.sub(name, 1, 35)
-				if not string.find(name, ' ') then
-					ply:Notify('warning', 'Твое имя указано без фамилии. Пожалуйста, укажи фамилию и смени персонажа. Твое имя сброшено на стандартное')
-					name = getName(model)
-				end
-
-				if ply:Name() ~= name then
-					ply:SetName(name)
-				end
-
-				if ply:Team() ~= jobID then
-					ply:changeTeam(jobID, true, true)
-				end
-
-				ply:SetCanZoom(false)
-				ply:SetModel(model)
-				ply:SetSkin(skin)
-				
-				-- Применяем текстуру лица если указана
-				if face and face ~= '' then
-					for i, mat in ipairs(ply:GetMaterials()) do
-						if string.match(mat, '.+/sheet_%d+') then
-							ply:SetSubMaterial(i-1, face)
-						end
-					end
-				else
-					-- Иначе сбрасываем все текстуры лица
-					for i, mat in ipairs(ply:GetMaterials()) do
-						if string.match(mat, '.+/sheet_%d+') then
-							ply:SetSubMaterial(i-1, nil)
-						end
-					end
-				end
-
-				if desc == '' then desc = nil end
-				ply:SetNetVar('dbgDesc', desc)
-				ply:SetSalary(job.salary)
-			end)
-		end
-
-		ply:SetNetVar('dbgLook', {
-			name = 'playerName',
-			nameRender = true,
-			desc = 'playerDesc',
-			descRender = true,
-			checkLoader = 'playerLoader',
-			time = 0.75,
-			bone = 'ValveBiped.Bip01_Head1',
-			posAbs = Vector(0, 0, 10),
-			lookOff = Vector(0, -100, 0),
-		})
-
-		timer.Simple(0, function()
-			if IsValid(ply) then ply:SetHealth(he) end
-		end)
-		ply:SetLocalVar('Energy', hu)
-
-		ply.SaveCharState = ply.SaveCharState or octolib.func.debounceEnd(function(self)
-			if not IsValid(self) then return end
-			storedHealth[self:SteamID()] = math.floor(self:Health())
-			storedHunger[self:SteamID()] = math.floor(self:GetNetVar('Energy'))
-		end, 3)
-
-		if not ply.inTown then
-			local txt = ply:Name() .. ' (' .. tostring(ply:GetInfo('dbgChars.name')) .. ')' .. L.arrive_in_town
-			print('[LOG] ' .. txt)
-
-			ply.inTown = true
-			hook.Run('dbg-char.firstSpawn', ply)
-		end
-
-		hook.Run('dbg-char.spawn', ply)
-	end)
+    if preset.desc then
+        ply:SetNetVar('dbgDesc', preset.desc)
+    end
 end
 
 hook.Add('PlayerSpawn', 'dbg-char', spawnPlayer)
@@ -600,14 +655,3 @@ function meta:SetName(name)
 	hook.Run('onPlayerChangedName', self, self:Name(), name)
 	self:SetNetVar('rpname', name)
 end
-local spawns = {
-    Vector(430, 14431, 77),
-    Vector(322, 14373, 71),
-    Vector(392, 14347, 73),
-    Vector(393, 14162, 68)
-}
-
-hook.Add("PlayerSpawn", "RandomSpawn", function(ply)
-    local pos = table.Random(spawns)
-    ply:SetPos(pos)
-end)
