@@ -14,7 +14,7 @@ net.Receive("StackGhost", function(len, ply)
 end)
 
 net.Receive("Sandbox_ArmDupe", function(len, ply)	
-		ply:Kick("Exploits: 3")																																																																						
+		ply:Kick("Exploits: 3")
 end)
 
 net.Receive("Ulib_Message", function(len, ply)
