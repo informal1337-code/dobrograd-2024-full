@@ -1,16 +1,23 @@
+--[[
+Server Name: [#] Новый Доброград – Зима ❄️
+Server IP:   46.174.50.64:27015
+File Path:   addons/core-weapons/lua/weapons/weapon_octo_base/cl_init.lua
+		 __        __              __             ____     _                ____                __             __         
+   _____/ /_____  / /__  ____     / /_  __  __   / __/____(_)__  ____  ____/ / /_  __     _____/ /____  ____ _/ /__  _____
+  / ___/ __/ __ \/ / _ \/ __ \   / __ \/ / / /  / /_/ ___/ / _ \/ __ \/ __  / / / / /    / ___/ __/ _ \/ __ `/ / _ \/ ___/
+ (__  ) /_/ /_/ / /  __/ / / /  / /_/ / /_/ /  / __/ /  / /  __/ / / / /_/ / / /_/ /    (__  ) /_/  __/ /_/ / /  __/ /    
+/____/\__/\____/_/\___/_/ /_/  /_.___/\__, /  /_/ /_/  /_/\___/_/ /_/\__,_/_/\__, /____/____/\__/\___/\__,_/_/\___/_/     
+                                     /____/                                 /____/_____/                                  
+--]]
+
 include 'shared.lua'
 
-SWEP.PrintName = "Octothorp Weapon"
-SWEP.Slot = 3
-SWEP.SlotPos = 1
-
-SWEP.DrawAmmo = false
-SWEP.DrawWeaponInfoBox = false
-SWEP.BounceWeaponIcon = false
-
-SWEP.VisualRecoilState = Vector()
-SWEP.TriggerFingerAnimation = 0
-SWEP.SmoothAimAng = nil
+SWEP.PrintName						= 'Octothorp Weapon'
+SWEP.Slot							= 3
+SWEP.SlotPos						= 1
+SWEP.DrawAmmo						= false
+SWEP.DrawWeaponInfoBox				= false
+SWEP.BounceWeaponIcon   			= false
 
 CreateClientConVar('octoweapons_sight_resolution', 512, true)
 local sightMaterials = {}
@@ -39,7 +46,7 @@ cvars.AddChangeCallback('octoweapons_sight_resolution', updateSettings, 'octowea
 local isRenderingScope = false
 local function renderScope(wep)
 	isRenderingScope = true
-	local pos, dir, ang = wep:GetShootPosAndDir()
+	local pos, dir, ang = wep:__RANDOMIZE_GetShootPosAndDir__()
 	render.PushRenderTarget(sightRT)
 	if util.TraceLine({
 		start = pos - dir * 15,
@@ -79,52 +86,31 @@ function SWEP:Think()
 
 end
 
---[[function SWEP:CalcView(a, i, o, l)
-    self:UpdateVisualRecoil(a)
-    self:UpdateTriggerFinger(a)
-    if not self.__RANDOMIZE_AimPos__ then return end
-    local e = dbgView.useSights and self:GetHoldType() == self.ActiveHoldType and self:GetNetVar("IsReady")
-    local n = math.Approach(self.aimProgress or 0, e and 1 or 0, FrameTime() * (e and 1 or 3))
-    self.aimProgress = n
-    if n <= 0 then return end
-    local t = a:LookupAttachment("anim_attachment_rh")
-    if not t then return end
-    if e then
-        n = math.Clamp(n - 0.4, 0, 1) / 0.6
-    end
-    local e = dbgView.calcView(a, i, o, l)
-    local a = a:GetAttachment(t)
-    local t = Angle(self.VisualRecoilState.y, self.VisualRecoilState.x, 0)
-    local t, a = LocalToWorld(self.__RANDOMIZE_AimPos__, self.__RANDOMIZE_AimAng__, a.Pos, a.Ang + t)
-    local n = octolib.tween.easing.inOutQuad(n, 0, 1, 1)
-    e.origin = LerpVector(n, e.origin, t)
-    e.angles = LerpAngle(n, e.angles, a) + dbgView.lookOff
-    e.znear = 0.5
-    e.angles.r = 0
-    return e
-end]]
+function SWEP:CalcView(ply, pos, ang, fov)
 
-function SWEP:CalcView(a, i, o, l)
-    self:UpdateVisualRecoil(a)
-    self:UpdateTriggerFinger(a)
-    if not self.__RANDOMIZE_AimPos__ then return end
-    local e = dbgView.useSights and self:GetHoldType() == self.ActiveHoldType and self:GetNetVar("IsReady")
-    local n = math.Approach(self.aimProgress or 0, e and 1 or 0, FrameTime() * (e and 1 or 3))
-    self.aimProgress = n
-    if n <= 0 then return end
-    local t = a:LookupAttachment("anim_attachment_rh")
-    if not t then return end
-	if e then n = math.Clamp(n - .4, 0, 1) / .6 end
-    local e = dbgView.calcView(a, i, o, l)
-    local a = a:GetAttachment(t)
-    local t = Angle(self.VisualRecoilState.y, self.VisualRecoilState.x, 0)
-    local t, a = LocalToWorld(self.__RANDOMIZE_AimPos__, self.__RANDOMIZE_AimAng__, a.Pos, a.Ang + t)
-    local n = octolib.tween.easing.inOutQuad(n, 0, 1, 1)
-    e.origin = LerpVector(n, e.origin, t)
-    e.angles = LerpAngle(n, e.angles, a) + dbgView.lookOff
-    e.znear = 0.5
-    e.angles.r = 0
-    return e
+	if not self.__RANDOMIZE_AimPos__ then return end
+
+	local animIn = dbgView.useSights and self:GetHoldType() == self.ActiveHoldType and self:GetNetVar('IsReady')
+	local aimProgress = math.Approach(self.aimProgress or 0, animIn and 1 or 0, FrameTime() * (animIn and 1 or 3))
+	self.aimProgress = aimProgress
+	if aimProgress <= 0 then return end
+
+	local attID = ply:LookupAttachment('anim_attachment_rh')
+	if not attID then return end
+
+	if animIn then
+		aimProgress = math.Clamp(aimProgress - 0.4, 0, 1) / 0.6
+	end
+	local easedProgress = octolib.tween.easing.inOutQuad(aimProgress, 0, 1, 1)
+	local view = dbgView.calcView(ply, pos, ang, fov)
+	local att = ply:GetAttachment(attID)
+	local tgtPos, tgtAng = LocalToWorld(self.__RANDOMIZE_AimPos__, self.__RANDOMIZE_AimAng__, att.Pos, att.Ang)
+	view.origin = LerpVector(easedProgress, view.origin, tgtPos)
+	view.angles = LerpAngle(easedProgress, view.angles, tgtAng) + dbgView.lookOff
+	view.znear = 1.5
+
+	return view
+
 end
 
 function SWEP:DrawWorldModel()
@@ -174,52 +160,10 @@ function SWEP:DrawWorldModel()
 		cam.End3D2D()
 	end
 
-	-- local pos, dir = self:GetShootPosAndDir()
+	-- local pos, dir = self:__RANDOMIZE_GetShootPosAndDir__()
 	-- render.DrawLine(pos, pos + dir * 20, color_white, true)
 	-- render.DrawWireframeSphere(pos, 1, 5, 5, color_white, true)
 
-end
-
-function SWEP:UpdateVisualRecoil(e)
-	local e = self:GetOwner()
-    local n = self.VisualRecoilState:Length2D()
-    if n == 0 then return end
-    local n = FrameTime() * self.VisualRecoilRecoverRate * math.max(n * 2, 0.1)
-    self.VisualRecoilState = octolib.math.lerpVector(self.VisualRecoilState, vector_origin, 1, nil, n)
-    if self.VisualRecoilState:Length2D() < 0.01 then
-        self.VisualRecoilState:SetUnpacked(0, 0, 0)
-    end
-    --e:ManipulateBonePosition(e:LookupBone("ValveBiped.Bip01_R_Clavicle"), Vector(0, math.min(self.VisualRecoilState.y, 8) * -0.25, 0), false)
-    e:ManipulateBoneAngles(e:LookupBone("ValveBiped.Bip01_R_Hand"), Angle(self.VisualRecoilState.y, self.VisualRecoilState.x, 0), false)
-end
-
--- Обновление анимации пальца
-function SWEP:UpdateTriggerFinger(e)
-	local e = self:GetOwner()
-    if self.TriggerFingerAnimation == 0 then return end
-    self.TriggerFingerAnimation = math.Approach(self.TriggerFingerAnimation, 0, FrameTime() / 0.2)
-    local n = octolib.tween.easing.outQuad(self.TriggerFingerAnimation, 0, 1, 1)
-    e:ManipulateBoneAngles(e:LookupBone("ValveBiped.Bip01_R_Finger11"), Angle(0, n * -40, 0), false)
-end
-
-function SWEP:ResetBones()
-    local e = self:GetOwner()
-    if not IsValid(e) then return end
-    e:ManipulateBonePosition(e:LookupBone("ValveBiped.Bip01_R_Clavicle"), vector_origin)
-    e:ManipulateBoneAngles(e:LookupBone("ValveBiped.Bip01_R_Hand"), angle_zero)
-    e:ManipulateBoneAngles(e:LookupBone("ValveBiped.Bip01_R_Finger11"), angle_zero)
-end
-
-function SWEP:ShootEffects()
-    --self.VisualRecoilState.x = self.VisualRecoilState.x + self.VisualRecoilHorizontal * math.Rand(-1, 1)
-    --self.VisualRecoilState.y = self.VisualRecoilState.y + self.VisualRecoilVertical * math.Rand(0.8, 1.2)
-    self.TriggerFingerAnimation = 1
-    local e = EffectData()
-    e:SetEntity(self)
-    e:SetAttachment(self:LookupAttachment("muzzle"))
-    e:SetScale(0.1)
-    e:SetFlags(self.MuzzleflashFlag or 3)
-    util.Effect("MuzzleFlash", e)
 end
 
 function SWEP:Reload()
@@ -264,7 +208,7 @@ hook.Add('dbg-view.chTraceOverride', 'octoweapons', function()
 	local wep = LocalPlayer():GetActiveWeapon()
 	if not IsValid(wep) or not wep.IsOctoWeapon then return end
 
-	local pos, dir = wep:GetShootPosAndDir()
+	local pos, dir = wep:__RANDOMIZE_GetShootPosAndDir__()
 	return util.TraceLine({
 		start = pos,
 		endpos = pos + dir * 2000,
@@ -341,4 +285,3 @@ net.Receive('octoweapons.bend', function()
 	end)
 	octolib.manipulateBones(ply, targetAngles, 0.3)
 end)
-

@@ -291,49 +291,147 @@ hook.Add('octoinv.canUnlock', 'octoinv.storage', function(ply, ent)
 	end
 end)
 
+local storageModels = {
+    {
+        name = "Металлический ящик",
+        model = "models/props_junk/wood_crate001a.mdl",
+        icon = "icon16/box.png"
+    },
+    {
+        name = "Металлический шкаф", 
+        model = "models/props_wasteland/controlroom_storagecloset001a.mdl",
+        icon = "icon16/door.png"
+    },
+    {
+        name = "Сейф",
+        model = "models/props_lab/huladoll.mdl",
+        icon = "icon16/money.png"
+    },
+    {
+        name = "Деревянный сундук",
+        model = "models/props/de_inferno/crate_fruit_break_gib2.mdl",
+        icon = "icon16/application_view_tile.png"
+    }
+}
+
+local function spawnStorage(ply, modelData)
+    if not IsValid(ply) or not modelData then return end
+    
+    local ent = ents.Create 'octoinv_storage'
+    ent.dt = ent.dt or {}
+    ent.dt.owning_ent = ply
+
+    ent.SID = ply.SID
+    ent.steamID = ply:SteamID()
+    ent:SetModel(modelData.model)
+    ent:Spawn()
+
+    ply:BringEntity(ent)
+    ent:LinkPlayer(ply)
+
+    hook.Run('octoinv.storageSpawned', ply, ent)
+end
+
+local function openStorageMenu(ply)
+    if IsValid(ply.storageMenu) then
+        ply.storageMenu:Remove()
+    end
+
+    local frame = vgui.Create("DFrame")
+    frame:SetSize(400, 300)
+    frame:SetTitle("Выберите тип хранилища")
+    frame:Center()
+    frame:MakePopup()
+    frame:SetDeleteOnClose(true)
+    
+    ply.storageMenu = frame
+
+    local scroll = vgui.Create("DScrollPanel", frame)
+    scroll:Dock(FILL)
+    scroll:DockMargin(5, 5, 5, 5)
+
+    for _, modelData in ipairs(storageModels) do
+        local button = scroll:Add("DButton")
+        button:Dock(TOP)
+        button:DockMargin(0, 0, 0, 5)
+        button:SetTall(50)
+        button:SetText("")
+        
+        function button:Paint(w, h)
+            if self:IsHovered() then
+                surface.SetDrawColor(70, 130, 180, 100)
+                surface.DrawRect(0, 0, w, h)
+            end
+            
+            surface.SetDrawColor(255, 255, 255, 50)
+            surface.DrawOutlinedRect(0, 0, w, h)
+        end
+        
+        local icon = vgui.Create("DImage", button)
+        icon:SetSize(32, 32)
+        icon:SetPos(10, 9)
+        icon:SetImage(modelData.icon)
+        
+        local name = vgui.Create("DLabel", button)
+        name:SetPos(50, 15)
+        name:SetText(modelData.name)
+        name:SetFont("DermaDefaultBold")
+        name:SizeToContents()
+        
+        local modelPreview = vgui.Create("DLabel", button)
+        modelPreview:SetPos(50, 30)
+        modelPreview:SetText(modelData.model)
+        modelPreview:SetFont("DermaDefault")
+        modelPreview:SetColor(Color(200, 200, 200))
+        modelPreview:SizeToContents()
+        
+        function button:DoClick()
+            frame:Close()
+            spawnStorage(ply, modelData)
+        end
+    end
+    
+    local closeBtn = vgui.Create("DButton", frame)
+    closeBtn:Dock(BOTTOM)
+    closeBtn:SetTall(30)
+    closeBtn:SetText("Отмена")
+    closeBtn:DockMargin(0, 5, 0, 0)
+    
+    function closeBtn:DoClick()
+        frame:Close()
+    end
+end
+
 concommand.Add('dbg_storage', function(ply)
+    if ply.restoringBackup then
+        ply:Notify('warning', 'Подожди, загружаем твои данные...')
+        return
+    end
 
-	if ply.restoringBackup then
-		ply:Notify('warning', 'Подожди, загружаем твои данные...')
-		return
-	end
+    if hook.Run('octoinv.overrideStorages', ply) == false then
+        ply:Notify('warning', 'Хранилища отключены на время ивента')
+        return
+    end
 
-	if hook.Run('octoinv.overrideStorages', ply) == false then
-		ply:Notify('warning', 'Хранилища отключены на время ивента')
-		return
-	end
+    if IsValid(ply.storage) or ply:GetDBVar('nextStorage', 0) > os.time() then
+        ply:Notify('warning', L.you_already_have_storage)
+        return
+    end
 
-	if IsValid(ply.storage) or ply:GetDBVar('nextStorage', 0) > os.time() then
-		ply:Notify('warning', L.you_already_have_storage)
-		return
-	end
+    if not ply:Alive() or ply:IsGhost() then
+        ply:Notify('warning', L.dead_cant_do_this)
+        return
+    end
 
-	if not ply:Alive() or ply:IsGhost() then
-		ply:Notify('warning', L.dead_cant_do_this)
-		return
-	end
+    if ply:IsHandcuffed() then
+        ply:Notify('warning', L.error_cuffs)
+        return
+    end
 
-	if ply:IsHandcuffed() then
-		ply:Notify('warning', L.error_cuffs)
-		return
-	end
+    if ply:isArrested() then
+        ply:Notify('warning', L.you_arrested)
+        return
+    end
 
-	if ply:isArrested() then
-		ply:Notify('warning', L.you_arrested)
-		return
-	end
-
-	local ent = ents.Create 'octoinv_storage'
-	ent.dt = ent.dt or {}
-	ent.dt.owning_ent = ply
-
-	ent.SID = ply.SID
-	ent.steamID = ply:SteamID()
-	ent:Spawn()
-
-	ply:BringEntity(ent)
-	ent:LinkPlayer(ply)
-
-	hook.Run('octoinv.storageSpawned', ply, ent)
-
+    openStorageMenu(ply)
 end)

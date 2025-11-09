@@ -5,58 +5,24 @@ include 'shared.lua'
 util.AddNetworkString('octoweapons.sound')
 util.AddNetworkString('octoweapons.bend')
 
-util.AddNetworkString('octoweapons.muzzleanimation')
-
-
---[[local function SendShootEffects(wep)
-    print("SendShootEffects called!")
-    if not IsValid(wep) then
-        print("Invalid weapon!")
-        return
-    end
-    local owner = wep:GetOwner()
-    if not IsValid(owner) then
-        print("Invalid owner!")
-        return
-    end
-
-    print("Sending shoot effects to clients...")
-    net.Start("octoweapons.shootEffects")
-        net.WriteEntity(wep)
-    for k, v in pairs(player.GetAll()) do
-        if v ~= owner then
-            net.Send(v)
-            print("Sent to " .. v:Nick())
-        end
-    end
-    print("Shoot effects sent!")
-end
-
-hook.Add("KeyPress", "SendShootEffects", function(ply, key)
-    if key == IN_ATTACK then
-        local wep = ply:GetActiveWeapon()
-        if IsValid(wep) and wep:GetNextPrimaryFire() <= CurTime() and wep:Clip1() > 0 then
-            SendShootEffects(wep)
-        end
-    end
-end)]]
-
 function SWEP:ShootEffects()
-    local e = self:GetOwner()
+    local owner = self:GetOwner()
+    if not IsValid(owner) then return end
 
-    local t = EffectData()
-    t:SetEntity(e)
-    t:SetOrigin(e:GetShootPos())
-    t:SetNormal(e:GetAimVector())
-    util.Effect('MuzzleEffect', t, true, true)
+    local effectData = EffectData()
+    effectData:SetEntity(owner)
+    effectData:SetOrigin(owner:GetShootPos())
+    effectData:SetNormal(owner:GetAimVector())
+    util.Effect('MuzzleEffect', effectData, true, true)
+    
     self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
+    owner:SetAnimation(PLAYER_ATTACK1)
 end
-
 
 -- 1 = left, 2 = right
 local function applyBend(ply, doBend)
 	local ct = CurTime()
-	if ply.bendApplied == doBend or doBend and (ply.nextBend or 0) > ct then return end
+	if ply.bendApplied == doBend or (doBend and (ply.nextBend or 0) > ct) then return end
 	ply.bendApplied = doBend
 	if doBend then
 		ply.nextBend = ct + 0.75
@@ -73,24 +39,31 @@ local function applyBend(ply, doBend)
 	if not IsValid(wep) or not wep.CanBend then return end
 
 	timer.Simple(0.32, function()
+		if not IsValid(ply) then return end
 		for bone, ang in pairs(wep.BendAngles[wep:GetHoldType()] or wep.BendAngles._default) do
-			ply:ManipulateBoneAngles(ply:LookupBone(bone), ang * mul)
+			local boneIndex = ply:LookupBone(bone)
+			if boneIndex then
+				ply:ManipulateBoneAngles(boneIndex, ang * mul)
+			end
 		end
 	end)
 end
 
 function SWEP:SetReady(b)
-
 	if not self:GetNetVar('CanSetReady') then return end
 	local ply = self.Owner
-	if not (IsValid(ply) and ply:IsOnGround()) then return end
+	if not IsValid(ply) then return end
+
+	if b and not ply:IsOnGround() then return end
 
 	local newHT = b and self.ActiveHoldType or self.PassiveHoldType
-	if IsValid(ply:GetVehicle()) and newHT == 'revolver' then newHT = 'pistol' end
+	if IsValid(ply:GetVehicle()) and newHT == 'revolver' then 
+		newHT = 'pistol' 
+	end
+	
 	self:SetHoldType(newHT)
 	self:SetNetVar('IsReady', b)
 
-	self.lastOwner = ply
 	if not self.CanRunWhenReady then
 		ply:MoveModifier('weapon', b and {
 			norun = true,
@@ -106,17 +79,18 @@ function SWEP:SetReady(b)
 end
 
 hook.Add('octolib.canUseAnimation', 'dbg_weapons', function(ply, cat)
-
 	local wep = ply:GetActiveWeapon()
 	if IsValid(wep) and wep:GetNetVar('IsReady') and (cat.stand or cat.freeze) then
 		return false
 	end
-
 end)
 
 function SWEP:Think()
-
 	local ply = self.Owner
+	if not IsValid(ply) then return end
+
+	if self:GetNetVar('NoReadyInput') then return end
+
 	if ply:KeyDown(IN_ATTACK2) and not self:GetNetVar('IsReady') then
 		if ply.octolib_customAnim and ply.octolib_customAnim[1] == 'walk' then
 			octolib.stopAnimations(ply)
@@ -127,7 +101,7 @@ function SWEP:Think()
 		end
 
 		self:SetReady(true)
-	elseif !ply:KeyDown(IN_ATTACK2) and self:GetNetVar('IsReady') then
+	elseif not ply:KeyDown(IN_ATTACK2) and self:GetNetVar('IsReady') then
 		self:SetReady(false)
 	end
 
@@ -136,7 +110,7 @@ function SWEP:Think()
 			applyBend(ply, nil)
 		end
 
-		local _, aim = self:GetShootPosAndDir()
+		local _, aim = self:__RANDOMIZE_GetShootPosAndDir__()
 		local trStart = ply:GetShootPos()
 		local trEnd = trStart + aim * 400
 		local tr = util.TraceLine({
@@ -148,24 +122,26 @@ function SWEP:Think()
 			end
 		})
 
-		local tgt = tr.Hit and tr.Entity
-		if IsValid(tgt) and tgt:IsPlayer() and self.CanScare and tgt:Team() ~= TEAM_ADMIN then
-			if ply:isCP() and tgt:isCP() then return end
-			local jtOwner, jtTgt = ply:getJobTable(), tgt:getJobTable()
-			if jtOwner.orgID and jtOwner.orgID == jtTgt.orgID then return end
-			tgt:SetNetVar('ScareState', math.min(tgt:GetNetVar('ScareState', 0) + (FrameTime() / 3) * (self.ScareMultiplier or 1), 1))
-			if tgt.lastScare <= 0.6 and tgt:GetNetVar('ScareState', 0) > 0.6 then
-				tgt:EmitSound('d1_trainstation.cryingloop')
-				tgt:MoveModifier('scare', {
+		local target = tr.Hit and tr.Entity
+		if IsValid(target) and target:IsPlayer() and self.CanScare and target:Team() ~= TEAM_ADMIN then
+			if ply:isCP() and target:isCP() then return end
+			local jobOwner, jobTarget = ply:getJobTable(), target:getJobTable()
+			if jobOwner.orgID and jobOwner.orgID == jobTarget.orgID then return end
+			
+			target:SetNetVar('ScareState', math.min(target:GetNetVar('ScareState', 0) + (FrameTime() / 3) * (self.ScareMultiplier or 1), 1))
+			
+			if target.lastScare <= 0.6 and target:GetNetVar('ScareState', 0) > 0.6 then
+				target:EmitSound('d1_trainstation.cryingloop')
+				target:MoveModifier('scare', {
 					walkmul = 0.5,
 					norun = true,
-					nujump = true,
+					nojump = true,
 				})
-				hook.Run('dbg.scareStart', tgt, ply, self)
+				hook.Run('dbg.scareStart', target, ply, self)
 			end
 
 			if not self.isScaring then
-				hook.Run('dbg.scareInit', tgt, ply, self)
+				hook.Run('dbg.scareInit', target, ply, self)
 			end
 			self.isScaring = true
 		else
@@ -174,59 +150,51 @@ function SWEP:Think()
 
 		ply.lastAim = CurTime()
 	end
-
 end
 
 function SWEP:Reload()
-
 	if not self:GetNetVar('CanSetReady') then return end
 	if self:Clip1() >= self:GetMaxClip1() or self:Ammo1() < 1 then return end
 
 	self:SetNextPrimaryFire(CurTime() + self.ReloadTime)
 
 	self:SetReady(false)
-	self:SetHoldType(self.ActiveHoldType) -- just to be sure we do it BEFORE sending animation
-	timer.Simple(.2, function()
-		self.Weapon:DefaultReload(ACT_VM_RELOAD)
+	self:SetHoldType(self.ActiveHoldType)
+	
+	timer.Simple(0.2, function()
+		if IsValid(self) then
+			self:DefaultReload(ACT_VM_RELOAD)
+		end
 	end)
 
 	self:SetNetVar('CanSetReady', false)
-	timer.Simple(self.ReloadTime + .3, function()
+	timer.Simple(self.ReloadTime + 0.3, function()
 		if IsValid(self) then
 			self:SetHoldType(self.PassiveHoldType)
 			self:SetNetVar('CanSetReady', true)
 		end
 	end)
-
 end
 
 function SWEP:ResetStats()
-
 	local owner = self.lastOwner or self.Owner
 	if IsValid(owner) then
 		owner:MoveModifier('weapon', nil)
 		applyBend(owner, nil)
 	end
-
 end
 
 function SWEP:Holster()
-
 	self:ResetStats()
 	return true
-
 end
 
 function SWEP:OnRemove()
-
 	self:ResetStats()
-
 end
 
 function SWEP:OnDrop()
-
 	self:ResetStats()
-
 end
 
 function SWEP:PlaySounds(sounds, filter)
@@ -234,12 +202,14 @@ function SWEP:PlaySounds(sounds, filter)
 		net.WriteUInt(#sounds, 5)
 		net.WriteVector(self:GetPos())
 		for _, name in ipairs(sounds) do
-			net.WriteString(name)
+			if name and name ~= '' then
+				net.WriteString(name)
+			end
 		end
 	if filter then
 		net.Send(filter)
 	else
-		net.SendPVS()
+		net.SendPVS(self:GetPos())
 	end
 end
 
@@ -251,15 +221,12 @@ net.Receive('octoweapons.bend', function(_, ply)
 end)
 
 hook.Add('PlayerSpawn', 'dbg-scare', function(ply)
-
 	ply.lastScare = 0
 	ply:StopSound('d1_trainstation.cryingloop')
-
 end)
 
-hook.Add('Think', 'dbg-scare', function(ply)
-
-	for i, ply in ipairs(player.GetAll()) do
+hook.Add('Think', 'dbg-scare', function()
+	for _, ply in ipairs(player.GetAll()) do
 		local scare = ply:GetNetVar('ScareState', 0)
 		if scare <= ply.lastScare and scare ~= 0 then
 			scare = math.max(scare - FrameTime() / 10, 0)
@@ -273,26 +240,23 @@ hook.Add('Think', 'dbg-scare', function(ply)
 		end
 		ply.lastScare = scare
 	end
-
 end)
 
 hook.Add('PlayerDisconnected', 'dbg-scare', function(ply)
-
 	if ply:GetNetVar('ScareState', 0) > 0.6 then
 		ply:Kill()
-		dbgChars.ghosts.triggerDeath(ply)
+		if dbgChars and dbgChars.ghosts and dbgChars.ghosts.triggerDeath then
+			dbgChars.ghosts.triggerDeath(ply)
+		end
 	end
-
 end, -6)
 
 local disabledCmds = {'/cr', '/sms', '/pm'}
 
 hook.Add('octochat.canExecute', 'dbg-scare', function(ply, cmd)
-
 	if ply:GetNetVar('ScareState', 0) > 0.6 and table.HasValue(disabledCmds, cmd) then
-		return false, L.you_scared
+		return false, L.you_scared or "Вы слишком напуганы!"
 	end
-
 end)
 
 hook.Add('closelook.canZoom', 'dbg-weapons', function(ply)
