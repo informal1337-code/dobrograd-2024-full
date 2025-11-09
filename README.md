@@ -33,8 +33,8 @@
 ### Установка
 1. в консоли steamcmd пишете `login anonymous`
 2. (ПО ЖЕЛАНИЮ) `force_install_dir C:\gmod_server` (либо другой путь, это по желанию)
-3. app_update 4020 validate
-4. quit
+3. `app_update 4020 validate`
+4. `quit`
 
 ## 3. Первый запуск твоего сервера
 ### запуск
@@ -199,4 +199,4 @@ end
 
 # у кого не начинается смена персонажа точек точнее нету:
 зайдите в `addons\core-characters\lua\dbg-characters\sv_characters.lua` и там на строке ~359 будет SpawnConfig (или что то такое) туда вставляйте свои значения позиций (кто шарит тот шарит.)
-> ПРИВЕТ ЧЕЛОГУ!
+> ПРИВЕТ ЧЕЛОГУ И КОМАНДЕ OCTOTHORP TEAM!
