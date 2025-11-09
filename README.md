@@ -6,7 +6,7 @@
 — **Dmitry Antonov** aka **[chelog](https://t.me/chelog)** - создатель octothorp team
 — **informal** aka **[informal1337](https://discord.gg/KY2Qpw9JdC)**
 # Установка:
-сначало, просто загрузим на локалку либо на хост каталоги, lua, gamemodes, addons, просто закинуть в garrysmod/ (! ОБЯЗЯТЕЛЬНО ЗАГРУЗИТЬ LUA !)
+сначало, просто загрузим на локалку либо на хост каталоги **[СКАЧАТЬ СБОРКУ](https://github.com/informal1337-code/dobrograd-2024-full/releases/tag/huy)**, lua, gamemodes, addons, просто закинуть в garrysmod/ (! ОБЯЗЯТЕЛЬНО ЗАГРУЗИТЬ LUA !)
 
 # Установка MySQL:
 1. Скачай последнюю версию MariaDB по **[ссылке](https://mariadb.com/downloads/)**
