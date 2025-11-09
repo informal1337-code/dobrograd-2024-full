@@ -1,0 +1,1 @@
+dbgTutorial.quest = dbgTutorial.quest or {}
