@@ -27,21 +27,19 @@ function ply:DoAnimation(animID)
         end, update)
     else
         -- заглушку добавил ебаааать!!!!
-        print("DoAnimation called on server for anim:" .. tostring(animID))
+        print('DoAnimation called on server for anim:' .. tostring(animID))
     end
 end
 
 netstream.Hook('player-anim', function(ply, animID)
-
-	if IsValid(ply) then
-		ply:DoAnimation(animID)
-	end
-
+if IsValid(ply) then
+ply:DoAnimation(animID)
+end
 end)
 
 netstream.Hook('player-custom-anim', function(ply, catID, animID)
 
-	if not IsValid(ply) then return end
+if not IsValid(ply) then return end
 
 	if not catID then
 		octolib.stopAnimations(ply)
