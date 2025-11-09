@@ -10,7 +10,7 @@ CFG.db = {
 
 	main = 'dbg',
 	admin = 'dbg',
-	shop = 'dbg',
+	shop = 'dbg', --ddd
 }
 CFG.requireLauncher = false
 
