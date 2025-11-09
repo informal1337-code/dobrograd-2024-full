@@ -1,5 +1,5 @@
 -- "addons\\feature-phone\\lua\\phone\\modules\\essentials\\cl_init.lua"
--- Retrieved by https://github.com/lewisclark/glua-steal
+
 local function req(title, desc, func)
 	return function()
 		Derma_StringRequest(title, desc, '', func, nil, L.ok, L.cancel)

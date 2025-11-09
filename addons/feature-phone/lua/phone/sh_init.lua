@@ -1,7 +1,15 @@
--- "addons\\feature-phone\\lua\\phone\\sh_init.lua"
--- Retrieved by https://github.com/lewisclark/glua-steal
+dbgPhone = dbgPhone or {}
+
 local meta = FindMetaTable('Player')
 
 function meta:IsUsingPhone()
-	return self:GetNetVar('UsingPhone', false)
+    return self:GetNetVar('UsingPhone', false)
+end
+
+if SERVER then
+    util.AddNetworkString("dbgPhone.setUsingPhone")
+    
+    function meta:SetUsingPhone(state)
+        self:SetNetVar("UsingPhone", state)
+    end
 end

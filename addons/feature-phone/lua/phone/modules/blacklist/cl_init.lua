@@ -1,5 +1,5 @@
 -- "addons\\feature-phone\\lua\\phone\\modules\\blacklist\\cl_init.lua"
--- Retrieved by https://github.com/lewisclark/glua-steal
+
 dbgPhone.registerAction('blacklist', {
 	title = L.make_blacklist,
 	priority = 2,

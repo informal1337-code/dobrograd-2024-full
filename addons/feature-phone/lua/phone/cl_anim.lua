@@ -1,5 +1,5 @@
 -- "addons\\feature-phone\\lua\\phone\\cl_anim.lua"
--- Retrieved by https://github.com/lewisclark/glua-steal
+
 local PlayerMeta = FindMetaTable('Player')
 local EntityMeta = FindMetaTable('Entity')
 

@@ -1,6 +1,6 @@
 AddCSLuaFile 'cl_init.lua'
 AddCSLuaFile 'shared.lua'
-
+--addons\feature-phone\lua\entities\ent_dbg_phone\init.lua
 include 'shared.lua'
 
 function ENT:Initialize()

@@ -1,5 +1,5 @@
 -- "addons\\feature-phone\\lua\\phone\\cl_init.lua"
--- Retrieved by https://github.com/lewisclark/glua-steal
+
 local actions = dbgPhone.actions
 if not actions then
 	actions = {}

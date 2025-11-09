@@ -1,6 +1,10 @@
 dbgPhone = dbgPhone or {}
 
-octolib.module('phone')
+octolib.include.prefixed('/phone/')
 
 octolib.include.client('/phone/vgui')
-octolib.module('phone/calls')
+
+octolib.include.prefixed('/phone/modules/essentials/')
+octolib.include.prefixed('/phone/modules/blacklist/')
+octolib.include.prefixed('/phone/modules/calls/')
+octolib.include.prefixed('/phone/modules/sms/')

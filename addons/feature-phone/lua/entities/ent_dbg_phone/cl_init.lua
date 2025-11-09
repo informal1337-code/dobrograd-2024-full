@@ -1,3 +1,4 @@
+--addons\feature-phone\lua\entities\ent_dbg_phone\cl_init.lua
 include 'shared.lua'
 
 local titlePosAngByModels = {

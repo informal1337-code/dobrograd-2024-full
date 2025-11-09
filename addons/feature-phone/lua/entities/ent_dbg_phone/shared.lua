@@ -9,3 +9,4 @@ ENT.Spawnable			= true
 ENT.AdminSpawnable		= true
 
 ENT.Model		= 'models/props_equipment/phone_booth.mdl'
+--addons\feature-phone\lua\entities\ent_dbg_phone\shared.lua

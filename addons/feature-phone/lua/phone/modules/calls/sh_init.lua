@@ -1,5 +1,5 @@
 -- "addons\\feature-phone\\lua\\phone\\modules\\calls\\sh_init.lua"
--- Retrieved by https://github.com/lewisclark/glua-steal
+
 dbgPhone.ringtones = {
 	{
 		title = 'Стандартный',

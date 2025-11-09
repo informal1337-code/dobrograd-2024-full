@@ -1,4 +1,3 @@
-util.AddNetworkString("dbgPhone.requestBlacklist")
 util.AddNetworkString("dbgPhone.callingTo")
 util.AddNetworkString("dbgPhone.incomingCall")
 util.AddNetworkString("dbgPhone.callStarted")
@@ -6,6 +5,8 @@ util.AddNetworkString("dbgPhone.endCall")
 util.AddNetworkString("dbgPhone.acceptCall")
 util.AddNetworkString("dbgPhone.makeCall")
 util.AddNetworkString("dbgPhone.callAnimation")
+
+local activeCalls = {}
 
 local function canUsePhone(ply)
     if not IsValid(ply) then return false end
@@ -22,40 +23,6 @@ local function canUsePhone(ply)
     
     return false
 end
-
-net.Receive("dbgPhone.requestBlacklist", function(len, ply)
-    if not canUsePhone(ply) then
-        ply:Notify("У вас нет телефона!")
-        return
-    end
-    
-    local action = net.ReadString()
-    
-    if action == "add" then
-        local players = {}
-        for _, v in ipairs(player.GetAll()) do
-            if v ~= ply then
-                table.insert(players, {name = v:Name(), steamid = v:SteamID()})
-            end
-        end
-
-        net.Start("dbgPhone.openBlacklistMenu")
-        net.WriteTable(players)
-        net.WriteString("add")
-        net.Send(ply)
-        
-    elseif action == "remove" then
-        local blacklist = ply:GetPData("dbgPhone_blacklist", "[]")
-        blacklist = util.JSONToTable(blacklist) or {}
-        
-        net.Start("dbgPhone.openBlacklistMenu")
-        net.WriteTable(blacklist)
-        net.WriteString("remove")
-        net.Send(ply)
-    end
-end)
-
-local activeCalls = {}
 
 local function startCall(caller, target)
     if not IsValid(caller) or not IsValid(target) then return false end
@@ -105,7 +72,7 @@ local function startCall(caller, target)
     net.Start("dbgPhone.callAnimation")
     net.WriteEntity(caller)
     net.WriteBool(true)
-    net.WriteBool(false) -- stationaryCall
+    net.WriteBool(false)
     net.SendPVS(caller:GetPos())
     
     net.Start("dbgPhone.callAnimation")
@@ -171,7 +138,7 @@ local function endCall(ply, reason)
     
     net.Start("dbgPhone.callAnimation")
     net.WriteEntity(ply)
-    net.WriteBool(false)
+        net.WriteBool(false)
     net.WriteBool(false)
     net.SendPVS(ply:GetPos())
     
@@ -219,121 +186,6 @@ end)
 
 net.Receive("dbgPhone.endCall", function(len, ply)
     endCall(ply, "normal")
-end)
-
-local function sendSMS(sender, recipientName, message)
-    if not canUsePhone(sender) then return false end
-    
-    local recipient
-    for _, v in ipairs(player.GetAll()) do
-        if v:Name() == recipientName then
-            recipient = v
-            break
-        end
-    end
-    
-    if not IsValid(recipient) then
-        sender:Notify("Абонент не найден!")
-        return false
-    end
-    
-    if not canUsePhone(recipient) then
-        sender:Notify("Абонент недоступен!")
-        return false
-    end
-    
-    local recipientBlacklist = recipient:GetPData("dbgPhone_blacklist", "[]")
-    recipientBlacklist = util.JSONToTable(recipientBlacklist) or {}
-    
-    for _, steamid in ipairs(recipientBlacklist) do
-        if steamid == sender:SteamID() then
-            sender:Notify("Абонент заблокировал ваши сообщения!")
-            return false
-        end
-    end
-    
-    net.Start("dbgPhone.receiveSMS")
-    net.WriteString(sender:Name())
-    net.WriteString(message)
-    net.Send(recipient)
-    
-    local phone = recipient.inv and recipient:FindItem({class = 'phone', on = true})
-    if phone then
-        if phone:GetData('notification') then
-            recipient:EmitSound('phone/phone_notification.wav', 38)
-        end
-        if phone:GetData('vibration') then
-            recipient:EmitSound('phone/phone_vibration.wav', 25)
-        end
-    end
-    
-    print(string.format("[SMS] %s -> %s: %s", sender:Name(), recipient:Name(), message))
-    
-    return true
-end
-
-net.Receive("dbg-phone.cr", function(len, ply)
-    if not canUsePhone(ply) then return end
-    
-    if (ply.nextEMSRequest or 0) > CurTime() then 
-        ply:Notify("Подождите перед следующим вызовом!")
-        return 
-    end
-    
-    local message = net.ReadString()
-    local name = ply:Nick()
-    
-    DarkRP.callEMS(ply, name, tostring(message))
-    
-    ply.nextEMSRequest = CurTime() + 60
-end)
-
-hook.Add("PlayerSay", "dbgPhone.chatCommands", function(ply, text)
-    local args = string.Explode(" ", text)
-    local command = args[1]:lower()
-    
-    if command == "/call" and #args >= 2 then
-        if not canUsePhone(ply) then
-            ply:Notify("У вас нет телефона!")
-            return ""
-        end
-        
-        local targetName = table.concat(args, " ", 2)
-        local target
-        
-        for _, v in ipairs(player.GetAll()) do
-            if string.find(v:Name():lower(), targetName:lower(), 1, true) then
-                target = v
-                break
-            end
-        end
-        
-        if not IsValid(target) then
-            ply:Notify("Абонент не найден!")
-            return ""
-        end
-        
-        if startCall(ply, target) then
-            ply:Notify("Звонок начат...")
-        end
-        
-        return ""
-        
-    elseif command == "/sms" and #args >= 3 then
-        if not canUsePhone(ply) then
-            ply:Notify("У вас нет телефона!")
-            return ""
-        end
-        
-        local targetName = string.sub(args[2], 2, -2)
-        local message = table.concat(args, " ", 3)
-        
-        if sendSMS(ply, targetName, message) then
-            ply:Notify("SMS отправлено!")
-        end
-        
-        return ""
-    end
 end)
 
 hook.Add("PlayerDisconnected", "dbgPhone.disconnect", function(ply)

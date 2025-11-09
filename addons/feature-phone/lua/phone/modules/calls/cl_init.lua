@@ -1,5 +1,5 @@
 -- "addons\\feature-phone\\lua\\phone\\modules\\calls\\cl_init.lua"
--- Retrieved by https://github.com/lewisclark/glua-steal
+
 local callUI
 netstream.Hook('dbgPhone.callingTo', function(name)
 	if IsValid(callUI) then

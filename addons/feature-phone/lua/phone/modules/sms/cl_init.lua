@@ -1,5 +1,5 @@
 -- "addons\\feature-phone\\lua\\phone\\modules\\sms\\cl_init.lua"
--- Retrieved by https://github.com/lewisclark/glua-steal
+
 local function sms()
 	local text, tgtName = '', ''
 
