@@ -13,19 +13,22 @@ File Path:   addons/core-octolib/lua/octolib/modules/anim/cl_anim.lua
 local ply = FindMetaTable 'Player'
 
 function ply:DoAnimation(animID)
+    if CLIENT then
+        local state = { weight = 1 }
+        local function update()
+            if not IsValid(self) then return end
+            self:AnimSetGestureWeight(GESTURE_SLOT_CUSTOM, state.weight)
+        end
 
-	local state = { weight = 1 }
-	local function update()
-		if not IsValid(self) then return end
-		self:AnimSetGestureWeight(GESTURE_SLOT_CUSTOM, state.weight)
-	end
-
-	octolib.tween.create(0.2, state, { weight = 0 }, 'inOutQuad', function()
-		if not IsValid(self) then return end
-		self:AnimRestartGesture(GESTURE_SLOT_CUSTOM, animID, true)
-		octolib.tween.create(0.2, state, { weight = 1 }, 'inOutQuad', nil, update)
-	end, update)
-
+        octolib.tween.create(0.2, state, { weight = 0 }, 'inOutQuad', function()
+            if not IsValid(self) then return end
+            self:AnimRestartGesture(GESTURE_SLOT_CUSTOM, animID, true)
+            octolib.tween.create(0.2, state, { weight = 1 }, 'inOutQuad', nil, update)
+        end, update)
+    else
+        -- заглушку добавил ебаааать!!!!
+        print("DoAnimation called on server for anim:" .. tostring(animID))
+    end
 end
 
 netstream.Hook('player-anim', function(ply, animID)
