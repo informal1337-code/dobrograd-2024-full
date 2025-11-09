@@ -1,3 +1,15 @@
+--[[
+Server Name: [#] Новый Доброград – Зима ❄️
+Server IP:   46.174.50.64:27015
+File Path:   addons/core-octoinv/lua/octoinv/market/cl_market.lua
+		 __        __              __             ____     _                ____                __             __         
+   _____/ /_____  / /__  ____     / /_  __  __   / __/____(_)__  ____  ____/ / /_  __     _____/ /____  ____ _/ /__  _____
+  / ___/ __/ __ \/ / _ \/ __ \   / __ \/ / / /  / /_/ ___/ / _ \/ __ \/ __  / / / / /    / ___/ __/ _ \/ __ `/ / _ \/ ___/
+ (__  ) /_/ /_/ / /  __/ / / /  / /_/ / /_/ /  / __/ /  / /  __/ / / / /_/ / / /_/ /    (__  ) /_/  __/ /_/ / /  __/ /    
+/____/\__/\____/_/\___/_/ /_/  /_.___/\__, /  /_/ /_/  /_/\___/_/ /_/\__,_/_/\__, /____/____/\__/\___/\__,_/_/\___/_/     
+                                     /____/                                 /____/_____/                                  
+--]]
+
 octoinv.marketSummary = octoinv.marketSummary or {}
 
 local timeRules = {
@@ -105,9 +117,10 @@ function PANEL:OpenMyOrders()
 			l:Clear()
 
 			for _, order in ipairs(orders) do
+				local class = order.data and order.data.class or order.item
 				local line = l:AddLine(
 					order.type == octoinv.ORDER_BUY and 'Покупка' or 'Продажа',
-					octoinv.getItemData(order.data or { class = order.item }, 'name') or 'Неизвестно',
+					octoinv.getItemData('name', class, order.data) or 'Неизвестно',
 					order.amount or 1,
 					DarkRP.formatMoney(order.price or 0),
 					octolib.string.formatCountExt(math.max(order.expire - os.time(), 0), timeRules)
@@ -371,7 +384,7 @@ function PANEL:OpenItem(itemID)
 				else
 					local icon = pnl:Add 'DImage'
 					icon:SetMouseInputEnabled(false)
-					icon:SetImage('icon16/tick.png')
+					icon:SetImage(octolib.icons.silk16('tick'))
 					icon:SetSize(16, 16)
 					icon:AlignLeft(4)
 					icon:AlignTop(2)
@@ -577,7 +590,6 @@ hook.Add('octogui.f4-tabs', 'octoinv.market', function()
 	})
 
 end)
-
 
 netstream.Hook('octoinv.marketSummary', function(itemID, data)
 
