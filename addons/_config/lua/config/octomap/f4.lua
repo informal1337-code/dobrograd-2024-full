@@ -1,6 +1,27 @@
+--[[
+Server Name: [#] Новый Доброград – Зима ❄️
+Server IP:   46.174.50.64:27015
+File Path:   addons/_config/lua/config/octomap/f4.lua
+		 __        __              __             ____     _                ____                __             __         
+   _____/ /_____  / /__  ____     / /_  __  __   / __/____(_)__  ____  ____/ / /_  __     _____/ /____  ____ _/ /__  _____
+  / ___/ __/ __ \/ / _ \/ __ \   / __ \/ / / /  / /_/ ___/ / _ \/ __ \/ __  / / / / /    / ___/ __/ _ \/ __ `/ / _ \/ ___/
+ (__  ) /_/ /_/ / /  __/ / / /  / /_/ / /_/ /  / __/ /  / /  __/ / / / /_/ / / /_/ /    (__  ) /_/  __/ /_/ / /  __/ /    
+/____/\__/\____/_/\___/_/ /_/  /_.___/\__, /  /_/ /_/  /_/\___/_/ /_/\__,_/_/\__, /____/____/\__/\___/\__,_/_/\___/_/     
+                                     /____/                                 /____/_____/                                  
+--]]
+
 local colBG = Color(0,0,0, 200)
 local function paintToolbar(self, w, h)
 	draw.RoundedBox(4, 0, 0, w, h, colBG)
+end
+local function updateHint(self)
+	local on = octolib.vars.get(self.var)
+	self:AddHint(('%s %s%s'):format(on and 'Отключить' or 'Включить', self.action, self:IsEnabled() and '' or ' (недоступно)'))
+	self:SetColor(on and Color(255, 255, 255) or Color(155, 155, 155))
+end
+local function toggleVarAndUpdateHint(self)
+	octolib.vars.set(self.var, not octolib.vars.get(self.var))
+	self:UpdateHint()
 end
 
 hook.Add('octogui.f4-tabs', 'octomap', function()
@@ -10,31 +31,31 @@ hook.Add('octogui.f4-tabs', 'octomap', function()
 		id = 'map',
 		name = 'Карта',
 		icon = Material('octoteam/icons/map.png'),
-		build = function(f)
-			f:SetSize(800, 600)
-			f:SetSizable(true)
-			f:DockPadding(0, 24, 0, 4)
-			f:SetMinWidth(400)
-			f:SetMinHeight(300)
+		build = function(frame)
+			frame:SetSize(800, 600)
+			frame:SetSizable(true)
+			frame:DockPadding(0, 24, 0, 4)
+			frame:SetMinWidth(400)
+			frame:SetMinHeight(300)
 
-			local map = f:Add 'octomap'
-			map:SetOptions({ paddingR = 200 })
+			local map = frame:Add 'octomap'
+			map:SetOptions({paddingR = 200})
 
-			local sb = map:Add 'DPanel'
-			map.sidebar = sb
-			sb:Dock(RIGHT)
-			sb:SetWide(190)
-			sb:DockMargin(5, 5, 5, 5)
+			local sidebar = map:Add 'DPanel'
+			map.sidebar = sidebar
+			sidebar:Dock(RIGHT)
+			sidebar:SetWide(190)
+			sidebar:DockMargin(5, 5, 5, 5)
 
-			local lv = sb:Add 'DListView'
-			lv:Dock(FILL)
-			lv:DockMargin(3, 4, 3, 4)
-			lv:AddColumn(''):SetFixedWidth(24) -- icon
-			lv:AddColumn('Название')
-			lv:SetHideHeaders(true)
-			lv:SetDataHeight(24)
-			lv:SetMultiSelect(false)
-			function lv:OnRowSelected(i, line)
+			local sidebarList = sidebar:Add 'DListView'
+			sidebarList:Dock(FILL)
+			sidebarList:DockMargin(3, 4, 3, 4)
+			sidebarList:AddColumn(''):SetFixedWidth(24) -- icon
+			sidebarList:AddColumn('Название')
+			sidebarList:SetHideHeaders(true)
+			sidebarList:SetDataHeight(24)
+			sidebarList:SetMultiSelect(false)
+			function sidebarList:OnRowSelected(_, line)
 				local marker = octomap.getMarker(line.markerID)
 				if not marker or not IsValid(map) then return end
 
@@ -53,34 +74,37 @@ hook.Add('octogui.f4-tabs', 'octomap', function()
 			end
 
 
-			function lv:OnRowRightClick(i, line)
+			function sidebarList:OnRowRightClick(_, line)
 
 				local lp = LocalPlayer()
 				local marker = octomap.getMarker(line.markerID)
 				if not marker or not IsValid(map) then return end
-				local m = DermaMenu()
+				local menu = DermaMenu()
 
 				if marker.temp then
-					m:AddOption('Удалить метку', function()
+					menu:AddOption('Удалить метку', function()
 						octolib.markers.clear(marker.id)
 						marker:Remove()
 					end):SetIcon(octolib.icons.silk16('map_delete'))
 				end
 				if lp:query('DBG: Телепорт по команде') and (lp:Team() == TEAM_ADMIN) then
-					m:AddOption('Телепортироваться', function()
+					menu:AddOption('Телепортироваться', function()
 						local pos = Vector(marker:GetPos()) + Vector(0, 0, 70)
-					    pos.z = octolib.space.getMapZ(pos.x, pos.y)
+						-- pos.z = octolib.space.getMapZ(pos.x, pos.y)
 						netstream.Start('octologs.goto', pos, lp:GetAngles())
 					end):SetIcon(octolib.icons.silk16('map_go'))
 				end
-				m:Open()
+
+				hook.Run('octomap.markerRightClick', menu, marker)
+
+				menu:Open()
 			end
-			sb.list = lv
+			sidebar.list = sidebarList
 
-			local hasSidebarData = { sidebarData = { _exists = true }}
+			local hasSidebarData = {sidebarData = {_exists = true}}
 
-			sb.Paint = paintToolbar
-			function sb:Refresh()
+			sidebar.Paint = paintToolbar
+			function sidebar:Refresh()
 				local markers = octolib.table.toKeyVal(octolib.table.filterQuery(octomap.markers, hasSidebarData))
 				table.sort(markers, function(a, b)
 					if a[2].sort or b[2].sort then
@@ -96,13 +120,13 @@ hook.Add('octogui.f4-tabs', 'octomap', function()
 
 				local function createMarker(id, marker)
 					local line = self.list:AddLine('', marker.sidebarData.name)
-					local ip = vgui.Create 'DPanel'
-					ip:SetPaintBackground(false)
-					line:SetColumnText(1, ip)
+					local iconCont = vgui.Create 'DPanel'
+					iconCont:SetPaintBackground(false)
+					line:SetColumnText(1, iconCont)
 					line.markerID = id
 					map.markerLines[id] = line
 
-					local icon = ip:Add 'DImage'
+					local icon = iconCont:Add 'DImage'
 					icon:Dock(FILL)
 					icon:DockMargin(6, 4, 2, 4)
 					icon:SetImage(marker.iconPath)
@@ -116,7 +140,7 @@ hook.Add('octogui.f4-tabs', 'octomap', function()
 						if not map.sidebarIDs[sbID] then
 							-- create only one line for grouped by sidebarID
 							createMarker(id, marker)
-							map.sidebarIDs[sbID] = { marker }
+							map.sidebarIDs[sbID] = {marker}
 						else
 							-- add reference for the rest
 							local l = map.sidebarIDs[sbID]
@@ -133,34 +157,73 @@ hook.Add('octogui.f4-tabs', 'octomap', function()
 				return self.markerLines[marker.id]
 			end
 
-			sb:Refresh()
+			sidebar:Refresh()
 			hook.Add('octomap.addedToSidebar', 'dbg-map', function(marker)
-				if not IsValid(sb) then return hook.Remove('octomap.addedToSidebar', 'dbg-map') end
-				sb:Refresh()
+				if not IsValid(sidebar) then return hook.Remove('octomap.addedToSidebar', 'dbg-map') end
+				sidebar:Refresh()
 			end)
 
-			local tb = map:Add 'DPanel'
-			tb:Dock(LEFT)
-			tb:DockMargin(5,5,5,5)
-			tb:SetWide(23)
-			tb:SetPaintBackground(false)
+			local buttonsCont = map:Add 'DPanel'
+			buttonsCont:Dock(LEFT)
+			buttonsCont:DockMargin(5,5,5,5)
+			buttonsCont:SetWide(23)
+			buttonsCont:SetPaintBackground(false)
 
-			local tbb = tb:Add 'DPanel'
-			tbb.Paint = paintToolbar
-			tbb:Dock(BOTTOM)
-			tbb:SetTall(46)
+			local zoomButtonsCont = buttonsCont:Add 'DPanel'
+			zoomButtonsCont.Paint = paintToolbar
+			zoomButtonsCont:Dock(BOTTOM)
+			zoomButtonsCont:SetTall(46)
 
-			local zIn = tbb:Add 'DImageButton'
-			zIn:SetPos(4, 4)
-			zIn:SetSize(16, 16)
-			zIn:SetImage(octolib.icons.silk16('magnifier_zoom_in'))
-			function zIn:DoClick() map:Zoom(1, map:FromPanelToMap(map:GetViewCenter())) end
+			local zoomInButton = zoomButtonsCont:Add 'DImageButton'
+			zoomInButton:SetPos(4, 4)
+			zoomInButton:SetSize(16, 16)
+			zoomInButton:SetImage(octolib.icons.silk16('magnifier_zoom_in'))
+			function zoomInButton:DoClick() map:Zoom(1, map:FromPanelToMap(map:GetViewCenter())) end
 
-			local zOut = tbb:Add 'DImageButton'
-			zOut:SetPos(4, 26)
-			zOut:SetSize(16, 16)
-			zOut:SetImage(octolib.icons.silk16('magnifier_zoom_out'))
-			function zOut:DoClick() map:Zoom(-1, map:FromPanelToMap(map:GetViewCenter())) end
+			local zoomOutButton = zoomButtonsCont:Add 'DImageButton'
+			zoomOutButton:SetPos(4, 26)
+			zoomOutButton:SetSize(16, 16)
+			zoomOutButton:SetImage(octolib.icons.silk16('magnifier_zoom_out'))
+			function zoomOutButton:DoClick() map:Zoom(-1, map:FromPanelToMap(map:GetViewCenter())) end
+
+			if octomap.config.streetsUrl or octomap.config.buildingsUrl then
+				local displayButtonsCont = buttonsCont:Add 'DPanel'
+				displayButtonsCont.Paint = paintToolbar
+				displayButtonsCont:Dock(BOTTOM)
+				displayButtonsCont:DockMargin(0, 0, 0, 5)
+				displayButtonsCont:SetTall(octomap.config.streetsUrl and octomap.config.buildingsUrl and 46 or 23)
+
+				local streetsButton, buildingsButton
+				if octomap.config.streetsUrl then
+					streetsButton = displayButtonsCont:Add 'DImageButton'
+					streetsButton:SetPos(4, 4)
+					streetsButton:SetSize(16, 16)
+					streetsButton:SetImage(octolib.icons.silk16('road_sign_hard'))
+					streetsButton:SetEnabled(octomap.config.streetsUrl ~= nil)
+					streetsButton.var = 'octomap.streets'
+					streetsButton.action = 'отображение названий улиц'
+					streetsButton.UpdateHint = updateHint
+					streetsButton:UpdateHint()
+					streetsButton.DoClick = toggleVarAndUpdateHint
+				end
+
+				if octomap.config.buildingsUrl then
+					buildingsButton = displayButtonsCont:Add 'DImageButton'
+					buildingsButton:SetPos(4, 4)
+					buildingsButton:SetSize(16, 16)
+					buildingsButton:SetImage(octolib.icons.silk16('sort_number_column'))
+					buildingsButton:SetEnabled(octomap.config.streetsUrl ~= nil)
+					buildingsButton.var = 'octomap.houses'
+					buildingsButton.action = 'отображение номеров домов'
+					buildingsButton.UpdateHint = updateHint
+					buildingsButton:UpdateHint()
+					buildingsButton.DoClick = toggleVarAndUpdateHint
+				end
+
+				if streetsButton and buildingsButton then
+					buildingsButton:SetY(26)
+				end
+			end
 
 			octomap.pnl = map
 		end,

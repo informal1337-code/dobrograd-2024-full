@@ -1,108 +1,14 @@
-local maps = {
-	rp_evocity_dbg_230226 = {
-		{
-			name = 'Причал',
-			icon = 'octoteam/icons-16/clown_fish.png',
-			pos = {
-                               Vector(-12211.93, 11730.99, 188.03),
-                               Vector(-7064.85, 13599.56, 188.03),
-                         },
-
-		}, {
-			name = 'Банкомат',
-			icon = 'octoteam/icons-16/card_money.png', 
-			sort = 1200,
-			pos = {
-				Vector(-6742.11, -7892.32, 98.63),
-				Vector(-8592.64, 9687.14, 67.70),
-				Vector(-1879.76, 6756.12, 70.93),
-				Vector(4288.32, 5501.94, 58.88),
-				Vector(-4788.77, -6142.00, 194.15),
-                                Vector(-5560.86, -9816.98, 55.81),
-                                Vector(-7969.70, -11663.17, 69.45),
-                                Vector(-10388.80, -9745.32, 73.54),
-                                Vector(-10371.87, -12796.00, 67.67),
-			},
-		}, {
-			name = 'Шахта',
-			icon = 'octoteam/icons-16/helmet_mine.png',
-			sort = 1200,
-			pos =   Vector(11329, 5403, 185),          
-              },
-	},
-                {
-			name = 'Церковь',
-			icon = 'octoteam/icons-16/church.png',
-			sort = 1201,
-			pos = Vector(-3134.94, 373.53, 65.03),
-		},
-	rp_eastcoast_v4c = {
-		{
-			name = 'Банкомат',
-			icon = 'octoteam/icons-16/card_money.png',
-			sort = 1200,
-			pos = Vector(911, 113, 32),
-		},
-	},
-	rp_truenorth_v1a = {
-		{
-			name = 'Шахта',
-			icon = 'octoteam/icons-16/helmet_mine.png',
-			sort = 1200,
-			pos = Vector(10388, -5966, 5377),
-		}, {
-			name = 'Банкомат',
-			icon = 'octoteam/icons-16/card_money.png',
-			sort = 1200,
-			pos = {
-				Vector(12134, 9322, 0),
-				Vector(7143, 2718, 0),
-				Vector(7834, 12721, 0),
-				Vector(-8404, -9142, 0),
-			},
-		},
-	},
-	rp_riverden_dbg_220313 = {
-		{
-			name = 'Шахта',
-			icon = 'octoteam/icons-16/helmet_mine.png',
-			sort = 1200,
-			pos = Vector(6888, 1590, 70),
-		}, {
-			name = 'Церковь',
-			icon = 'octoteam/icons-16/church.png',
-			sort = 1201,
-			pos = Vector(-10078, 6336, -192),
-		}, {
-			name = 'Вокзал',
-			icon = 'octoteam/icons-16/train_metro.png',
-			sort = 1202,
-			pos = Vector(-12800, 13504, 64),
-		}, {
-			name = 'Заправка',
-			icon = 'octoteam/icons-16/gas.png',
-			sort = 1203,
-			pos = {
-				Vector(-656, 13246, 64),
-				Vector(-9439, 2595, -192),
-				Vector(6656, -13696, 868),
-			},
-		}, {
-			name = 'Банкомат',
-			icon = 'octoteam/icons-16/card_money.png',
-			sort = 1204,
-			pos = {
-				Vector(-12268, 14650, 0),
-				Vector(-13808, 3936, -255),
-				Vector(-4381, 1807, -255),
-				Vector(-4623, 10204, 0),
-				Vector(-9536, 10992, 0),
-			},
-		},
-	},
-}
-
-local mapMarkers = maps[game.GetMap()] or {}
+--[[
+Server Name: [#] Новый Доброград – Зима ❄️
+Server IP:   46.174.50.64:27015
+File Path:   addons/_config/lua/config/octomap/markers.lua
+		 __        __              __             ____     _                ____                __             __         
+   _____/ /_____  / /__  ____     / /_  __  __   / __/____(_)__  ____  ____/ / /_  __     _____/ /____  ____ _/ /__  _____
+  / ___/ __/ __ \/ / _ \/ __ \   / __ \/ / / /  / /_/ ___/ / _ \/ __ \/ __  / / / / /    / ___/ __/ _ \/ __ `/ / _ \/ ___/
+ (__  ) /_/ /_/ / /  __/ / / /  / /_/ / /_/ /  / __/ /  / /  __/ / / / /_/ / / /_/ /    (__  ) /_/  __/ /_/ / /  __/ /    
+/____/\__/\____/_/\___/_/ /_/  /_.___/\__, /  /_/ /_/  /_/\___/_/ /_/\__,_/_/\__, /____/____/\__/\___/\__,_/_/\___/_/     
+                                     /____/                                 /____/_____/                                  
+--]]
 
 function octomap.sidebarMarkerClick(self, map)
 
@@ -120,7 +26,7 @@ hook.Add('Think', 'octomap.addMarkers', function()
 
 	hook.Remove('Think', 'octomap.addMarkers')
 
-	for i, v in ipairs(mapMarkers) do
+	for i, v in ipairs(octomap.config.markers or {}) do
 		if istable(v.pos) then
 			for i2, pos in ipairs(v.pos) do
 				local m = octomap.createMarker('dbg' .. i .. '_' .. i2)
