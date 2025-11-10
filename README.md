@@ -201,5 +201,9 @@ end
 ## Смена персонажей:
 Зайди в `addons\core-characters\lua\dbg-characters\sv_characters.lua` и там на строке ~359 будет SpawnConfig (или что то такое) туда значение позиций.
 ## Автодилер:
-Зайди в 
+Зайди в ... а нету, жди коммита который добавляет таблицу спавнов.
+## Тюрьма:
+Зайди в `addons\_config\lua\config\groups\prison.lua` и там на строке ~106 будет spawns[] эти значения изменяешь.
+# Метки, карта
+`addons\_config\lua\config\octomap\maps\rp_ndbg_winter.lua` все тут.
 > ПРИВЕТ ЧЕЛОГУ И КОМАНДЕ OCTOTHORP TEAM!
