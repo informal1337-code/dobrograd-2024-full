@@ -209,4 +209,7 @@ end
 # Метки, карта
 `addons\_config\lua\config\octomap\maps\rp_ndbg_winter.lua` все тут.
 
+
+# ШАБЛОН ДС СЕРВЕРА
+шаблон дс сервера дбг `https://discord.new/mGv2XpEvCB3e`
 > ПРИВЕТ ЧЕЛОГУ И КОМАНДЕ OCTOTHORP TEAM!
