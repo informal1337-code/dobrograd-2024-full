@@ -27,8 +27,8 @@ function ply:DoAnimation(animID)
         end, update)
     else
         -- заглушку добавил ебаааать!!!!
-        print('DoAnimation called on server for anim:' .. tostring(animID))
-    end
+    print('DoAnimation called on server for anim:' .. tostring(animID))
+end
 end
 
 netstream.Hook('player-anim', function(ply, animID)

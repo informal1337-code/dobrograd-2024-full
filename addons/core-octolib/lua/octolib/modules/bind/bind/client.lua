@@ -112,6 +112,11 @@ hook.Add('PlayerButtonUp', 'octolib-bind', function(_, but)
 		for _, func in ipairs(funcs) do func() end
 	end
 end)
+net.Receive('octolib.bind.sync', function()
+    local binds = net.ReadTable()
+    octolib.bind.cache = binds
+    rebuildMapsDebounced()
+end)
 
 octolib.bind.cache = octolib.vars.get('binds_' .. (CFG.serverGroupIDvars or CFG.serverGroupID)) or {}
 rebuildMapsDebounced()

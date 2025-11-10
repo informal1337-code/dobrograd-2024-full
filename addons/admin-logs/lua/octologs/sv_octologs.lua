@@ -5,20 +5,20 @@ octologs.logsFailed = {}
 octologs.lastLogTime = 0
 local settings = {}
 local webhooks = {
-    "https://discord.com/api/webhooks/1433085379535306794/VabKTibGjGCE0MFIH13BbicU8dQe2FKNNMcpBS94kY8GLrx6necY27XbuLMNPgIHhgRG",
-	"https://discord.com/api/webhooks/1366485582510948393/SYc8oUKuKramUUfawQirtp4psCR64Bx8-YQZ3K4ZT_PaHKWen3LrkR2ICmtLIIXVdaDc",
-	"https://discord.com/api/webhooks/1366485720901881936/-zMe1M_eXtFpGwWQlx4tcSMfkx2_MTu2aZzpJR2KU7Xp4egvAYGincHJdCv4_acuoFDb",
-	"https://discord.com/api/webhooks/1366485834835951789/WJrRp9fXuCX1YbAxhfGtf5E6_KkeXwxY7E44HnHI4x6uzfY0SMMkpWO1uFylih37Yn3j",
-	"https://discord.com/api/webhooks/1366485950590488711/n5Jxq9Br0KyzacObVguRI8HiiUaTSoY-S4j_yHoGH41uvwvR6ry_ho-pFnOKKTsKjQkR",
-	"https://discord.com/api/webhooks/1366486065363550218/yXesaPSi9nEXUZSr-NETQW4ebjpxrYXdrfAds8RiwK-B5i_JqW35N_DxtOdmMLClSA5e",
-	"https://discord.com/api/webhooks/1366486130006036572/gc1WG49pEtvC7nnuZ3tAol_YCOO7zb4WlpTEO5kvfMWkxLtDkTnrD34UU-beKxvYfZYL",
-	"https://discord.com/api/webhooks/1366486228366655508/eVy9YXpy10l0up-9dXiLrdIioPPZSX1CYO1t-4nIe8QDG05Ythm0MGGDFU-7DPkJId0l",
-	"https://discord.com/api/webhooks/1366486375741915227/nGgz-T_50bm3K9WBnR679RYMjY7wY_hRYpG9NOFZDUXaxhd_PfKCCENLcKMr-pOku-Ym",
-	"https://discord.com/api/webhooks/1366486467181809796/A7etIyHbA2DKf-2EUTytRSZd8thpmDRW7hMaL8igL3ug3O8_EC9ukP7lomBMmvIOSISD",
-	"https://discord.com/api/webhooks/1366486543837171862/li1HoIu4O_HWNsepRfGVoSCL22w3I9y084-9Pam4HJZNRjWJZooZmJ-0iAq2oIz-4r_5",
-	"https://discord.com/api/webhooks/1366486604557975552/09Ts0g3J9U_8GmADROpbtS5LHUDkrdKeSuU7tTBCA-HtuI4DoSxYE_6hLrTo54wMZEUq",
-	"https://discord.com/api/webhooks/1366486700439634012/oGdQo0YG2nPQEgZnchyXEfujqccUrCUhekjbeEp4_3Zgx7jMQ3XNZsrxGEmfPUZz48fA",
-	"https://discord.com/api/webhooks/1366486839782936606/IQOjFFxODWJGgQYk16SSXFgXZa6moS2DvH6xVxQRgsy2p_Nfns8PAWSQr2OGmX_lfw3n",
+    "", --CAT_OTHER
+	"", -- CAT_ADMIN
+	"", -- CAT_DONATE
+	"",--CAT_BUILD
+	"", --CAT_DAMAGE
+	"", -- CAT_INVENTORY
+	"", -- CAT_SHOP
+	"", -- CAT_POLICE
+	"", -- CAT_PROPERTY
+	"", -- CAT_LOCKPICK
+	"", -- CAT_CUFF
+	"", -- CAT_KARMA
+	"", -- CAT_GMPANEL
+	"", -- CAT_VEHICLE
 
 }
 
