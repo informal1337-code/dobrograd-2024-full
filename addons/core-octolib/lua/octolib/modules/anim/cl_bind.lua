@@ -9,6 +9,7 @@ File Path:   addons/core-octolib/lua/octolib/modules/anim/cl_bind.lua
 /____/\__/\____/_/\___/_/ /_/  /_.___/\__, /  /_/ /_/  /_/\___/_/ /_/\__,_/_/\__, /____/____/\__/\___/\__,_/_/\___/_/     
                                      /____/                                 /____/_____/                                  
 --]]
+octolib.bind = octolib.bind or {} -- аааааааааааааааааааа фикс
 
 octolib.bind.registerHandler('anim', {
 	name = 'Запустить анимацию',
