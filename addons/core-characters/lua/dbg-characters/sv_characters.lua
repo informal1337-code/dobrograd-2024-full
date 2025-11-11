@@ -18,15 +18,6 @@ local allowedModels = {
     ['models/humans/octo/male_09_01.mdl'] = {0,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,22,23},
 }
 
-util.AddNetworkString('dbg-characters.savePresets')
-util.AddNetworkString('dbg-characters.getPresets')
-util.AddNetworkString('dbg-characters.updateState')
-util.AddNetworkString('dbg-characters.respawn')
-util.AddNetworkString('dbg-characters.selectPreset')
-util.AddNetworkString('dbg-characters.newPreset')
-util.AddNetworkString('dbg-characters.editPreset')
-util.AddNetworkString('dbg-characters.removePreset')
-
 octolib.db:PrepareQuery([[
     CREATE TABLE IF NOT EXISTS dbg_characters (
         steamid VARCHAR(20) NOT NULL PRIMARY KEY,
@@ -34,9 +25,7 @@ octolib.db:PrepareQuery([[
     )
 ]])
 
-net.Receive('dbg-characters.savePresets', function(len, ply)
-    local presets = net.ReadTable()
-    
+netstream.Hook('dbg-characters.savePresets', function(ply, presets)
     if not presets then return end
     
     local maxPresets = ply:IsPremium() and 10 or 3
@@ -64,11 +53,9 @@ net.Receive('dbg-characters.savePresets', function(len, ply)
     ply.presets = presets
 end)
 
-net.Receive('dbg-characters.getPresets', function(len, ply)
+netstream.Hook('dbg-characters.getPresets', function(ply)
     if ply.presets then
-        net.Start('dbg-characters.getPresets')
-        net.WriteTable(ply.presets)
-        net.Send(ply)
+        netstream.Start(ply, 'dbg-characters.getPresets', ply.presets)
     else
         octolib.db:PrepareQuery('SELECT presets FROM dbg_characters WHERE steamid = ?', {ply:SteamID()}, function(q, st, res)
             if istable(res) and #res > 0 and res[1].presets then
@@ -77,16 +64,12 @@ net.Receive('dbg-characters.getPresets', function(len, ply)
                 ply.presets = {}
             end
             
-            net.Start('dbg-characters.getPresets')
-            net.WriteTable(ply.presets)
-            net.Send(ply)
+            netstream.Start(ply, 'dbg-characters.getPresets', ply.presets)
         end)
     end
 end)
 
-net.Receive('dbg-characters.selectPreset', function(len, ply)
-    local presetIndex = net.ReadUInt(8)
-    
+netstream.Hook('dbg-characters.selectPreset', function(ply, presetIndex)
     if not ply.presets or not ply.presets[presetIndex] then
         ply:Notify('warning', 'Пресет не найден')
         return
@@ -107,9 +90,7 @@ net.Receive('dbg-characters.selectPreset', function(len, ply)
     end
 end)
 
-net.Receive('dbg-characters.newPreset', function(len, ply)
-    local presetData = net.ReadTable()
-    
+netstream.Hook('dbg-characters.newPreset', function(ply, presetData)
     if not ply.presets then
         ply.presets = {}
     end
@@ -128,15 +109,10 @@ net.Receive('dbg-characters.newPreset', function(len, ply)
     octolib.db:PrepareQuery([[INSERT INTO dbg_characters (steamid, presets) VALUES (?,?) ON DUPLICATE KEY UPDATE presets=?]],
         {ply:SteamID(), util.TableToJSON(ply.presets), util.TableToJSON(ply.presets)})
     
-    net.Start('dbg-characters.newPreset')
-    net.WriteTable(presetData)
-    net.Send(ply)
+    netstream.Start(ply, 'dbg-characters.newPreset', presetData)
 end)
 
-net.Receive('dbg-characters.editPreset', function(len, ply)
-    local presetIndex = net.ReadUInt(8)
-    local presetData = net.ReadTable()
-    
+netstream.Hook('dbg-characters.editPreset', function(ply, presetIndex, presetData)
     if not ply.presets or not ply.presets[presetIndex] then
         ply:Notify('warning', 'Пресет не найден')
         return
@@ -148,15 +124,10 @@ net.Receive('dbg-characters.editPreset', function(len, ply)
     octolib.db:PrepareQuery([[INSERT INTO dbg_characters (steamid, presets) VALUES (?,?) ON DUPLICATE KEY UPDATE presets=?]],
         {ply:SteamID(), util.TableToJSON(ply.presets), util.TableToJSON(ply.presets)})
     
-    net.Start('dbg-characters.editPreset')
-    net.WriteUInt(presetIndex, 8)
-    net.WriteTable(presetData)
-    net.Send(ply)
+    netstream.Start(ply, 'dbg-characters.editPreset', presetIndex, presetData)
 end)
 
-net.Receive('dbg-characters.removePreset', function(len, ply)
-    local presetIndex = net.ReadUInt(8)
-    
+netstream.Hook('dbg-characters.removePreset', function(ply, presetIndex)
     if not ply.presets or not ply.presets[presetIndex] then
         ply:Notify('warning', 'Пресет не найден')
         return
@@ -171,9 +142,7 @@ net.Receive('dbg-characters.removePreset', function(len, ply)
     octolib.db:PrepareQuery([[INSERT INTO dbg_characters (steamid, presets) VALUES (?,?) ON DUPLICATE KEY UPDATE presets=?]],
         {ply:SteamID(), util.TableToJSON(ply.presets), util.TableToJSON(ply.presets)})
     
-    net.Start('dbg-characters.removePreset')
-    net.WriteUInt(presetIndex, 8)
-    net.Send(ply)
+    netstream.Start(ply, 'dbg-characters.removePreset', presetIndex)
 end)
 
 hook.Add('PlayerInitialSpawn', 'dbg-char.loadPresets', function(ply)
@@ -378,9 +347,6 @@ local spawnsConfig = {
 
 local respPos = spawnsConfig[game.GetMap()] or spawnsConfig.rp_evocity_dbg_251031
 
-util.AddNetworkString('dbg-char.respawnRequest')
-util.AddNetworkString('dbg-char.respawnCancel')
-
 local function getRespawnPos(ply, minDist, maxDist)
     if minDist then
         local okPos = {}
@@ -400,9 +366,7 @@ end
 local function enableCharRespawn(ply, pos)
     ply.dbgChar_respawnPos = pos
 
-    net.Start('dbg-characters.updateState')
-    net.WriteBool(true)
-    net.Send(ply)
+    netstream.Start(ply, 'dbg-characters.updateState', true)
 
     ply:AddMarker({
         id = 'change-char',
@@ -432,18 +396,20 @@ local function respawnRequest(ply)
         return
     end
 
-    local _, info_job = DarkRP.getJobByCommand(ply:GetInfo('dbg_job') or 'citizen')
-    local job = RPExtraTeams[info_job]
-    local limit = job.max == 0 or team.NumPlayers(job.team) < math.ceil(player.GetCount() * job.max)
+    local jobCmd = ply:GetInfo('dbgChars.job') or 'citizen'
+    local job, jobID = DarkRP.getJobByCommand(jobCmd)
+    if not job then
+        ply:Notify('warning', 'Профессия не найдена')
+        return
+    end
 
+    local limit = job.max == 0 or team.NumPlayers(job.team) < math.ceil(player.GetCount() * job.max)
     if not limit then
         ply:Notify('warning', 'Достигнут лимит профессии')
         return
     end
 
-    net.Start('dbg-characters.updateState')
-    net.WriteBool(true)
-    net.Send(ply)
+    netstream.Start(ply, 'dbg-characters.updateState', true)
 
     local pos = getRespawnPos(ply, 1000, 8000)
     if pos then
@@ -457,18 +423,14 @@ local function removeTimer(ply)
     ply:ClearMarkers('change-char')
     ply.dbgChar_respawnPos = nil
     
-    net.Start('dbg-characters.updateState')
-    net.WriteBool(false)
-    net.Send(ply)
+    netstream.Start(ply, 'dbg-characters.updateState', false)
 end
 
 hook.Add('PlayerDeath', 'dbg-char', removeTimer)
 hook.Add('PlayerSilentDeath', 'dbg-char', removeTimer)
 hook.Add('PlayerDisconnected', 'dbg-char', removeTimer)
 
-net.Receive('dbg-characters.respawn', function(len, ply)
-    local state = net.ReadBool()
-    
+netstream.Hook('dbg-characters.respawn', function(ply, state)
     if state then
         respawnRequest(ply)
     else 
