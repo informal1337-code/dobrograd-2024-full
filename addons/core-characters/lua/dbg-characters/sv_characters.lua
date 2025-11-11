@@ -18,12 +18,34 @@ local allowedModels = {
     ['models/humans/octo/male_09_01.mdl'] = {0,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,22,23},
 }
 
-octolib.db:PrepareQuery([[
-    CREATE TABLE IF NOT EXISTS dbg_characters (
-        steamid VARCHAR(20) NOT NULL PRIMARY KEY,
-        presets TEXT NOT NULL
-    )
-]])
+local function savePresetsToData(ply, presets) -- аа говно shit фуу
+    if not IsValid(ply) then return end
+    
+    local steamID = ply:SteamID()
+    if not steamID then return end
+    
+    file.CreateDir('dbg_characters')
+    file.Write('dbg_characters/' .. steamID .. '.txt', util.TableToJSON(presets or {}))
+end
+
+local function loadPresetsFromData(ply)
+    if not IsValid(ply) then return {} end
+    
+    local steamID = ply:SteamID()
+    if not steamID then return {} end
+    
+    local fileName = 'dbg_characters/' .. steamID .. '.txt'
+    if not file.Exists(fileName, 'DATA') then
+        return {}
+    end
+    
+    local data = file.Read(fileName, 'DATA')
+    if not data or data == '' then
+        return {}
+    end
+    
+    return util.JSONToTable(data) or {}
+end
 
 netstream.Hook('dbg-characters.savePresets', function(ply, presets)
     if not presets then return end
@@ -47,9 +69,7 @@ netstream.Hook('dbg-characters.savePresets', function(ply, presets)
         end
     end
     
-    octolib.db:PrepareQuery([[INSERT INTO dbg_characters (steamid, presets) VALUES (?,?) ON DUPLICATE KEY UPDATE presets=?]],
-        {ply:SteamID(), util.TableToJSON(presets), util.TableToJSON(presets)})
-    
+    savePresetsToData(ply, presets)
     ply.presets = presets
 end)
 
@@ -57,15 +77,8 @@ netstream.Hook('dbg-characters.getPresets', function(ply)
     if ply.presets then
         netstream.Start(ply, 'dbg-characters.getPresets', ply.presets)
     else
-        octolib.db:PrepareQuery('SELECT presets FROM dbg_characters WHERE steamid = ?', {ply:SteamID()}, function(q, st, res)
-            if istable(res) and #res > 0 and res[1].presets then
-                ply.presets = util.JSONToTable(res[1].presets) or {}
-            else
-                ply.presets = {}
-            end
-            
-            netstream.Start(ply, 'dbg-characters.getPresets', ply.presets)
-        end)
+        ply.presets = loadPresetsFromData(ply)
+        netstream.Start(ply, 'dbg-characters.getPresets', ply.presets)
     end
 end)
 
@@ -106,8 +119,7 @@ netstream.Hook('dbg-characters.newPreset', function(ply, presetData)
     
     table.insert(ply.presets, presetData)
     
-    octolib.db:PrepareQuery([[INSERT INTO dbg_characters (steamid, presets) VALUES (?,?) ON DUPLICATE KEY UPDATE presets=?]],
-        {ply:SteamID(), util.TableToJSON(ply.presets), util.TableToJSON(ply.presets)})
+    savePresetsToData(ply, ply.presets)
     
     netstream.Start(ply, 'dbg-characters.newPreset', presetData)
 end)
@@ -121,8 +133,7 @@ netstream.Hook('dbg-characters.editPreset', function(ply, presetIndex, presetDat
     presetData.updated = os.time()
     ply.presets[presetIndex] = presetData
     
-    octolib.db:PrepareQuery([[INSERT INTO dbg_characters (steamid, presets) VALUES (?,?) ON DUPLICATE KEY UPDATE presets=?]],
-        {ply:SteamID(), util.TableToJSON(ply.presets), util.TableToJSON(ply.presets)})
+    savePresetsToData(ply, ply.presets)
     
     netstream.Start(ply, 'dbg-characters.editPreset', presetIndex, presetData)
 end)
@@ -139,20 +150,13 @@ netstream.Hook('dbg-characters.removePreset', function(ply, presetIndex)
         preset.id = i
     end
     
-    octolib.db:PrepareQuery([[INSERT INTO dbg_characters (steamid, presets) VALUES (?,?) ON DUPLICATE KEY UPDATE presets=?]],
-        {ply:SteamID(), util.TableToJSON(ply.presets), util.TableToJSON(ply.presets)})
+    savePresetsToData(ply, ply.presets)
     
     netstream.Start(ply, 'dbg-characters.removePreset', presetIndex)
 end)
 
 hook.Add('PlayerInitialSpawn', 'dbg-char.loadPresets', function(ply)
-    octolib.db:PrepareQuery('SELECT presets FROM dbg_characters WHERE steamid = ?', {ply:SteamID()}, function(q, st, res)
-        if istable(res) and #res > 0 and res[1].presets then
-            ply.presets = util.JSONToTable(res[1].presets) or {}
-        else
-            ply.presets = {}
-        end
-    end)
+    ply.presets = loadPresetsFromData(ply)
 end)
 
 local function getRandomModel()
