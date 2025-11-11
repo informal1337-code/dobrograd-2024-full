@@ -1,3 +1,15 @@
+--[[
+Server Name: [#] Новый Доброград – Зима ❄️
+Server IP:   46.174.50.64:27015
+File Path:   addons/_config/lua/config/dbg-characters.lua
+		 __        __              __             ____     _                ____                __             __         
+   _____/ /_____  / /__  ____     / /_  __  __   / __/____(_)__  ____  ____/ / /_  __     _____/ /____  ____ _/ /__  _____
+  / ___/ __/ __ \/ / _ \/ __ \   / __ \/ / / /  / /_/ ___/ / _ \/ __ \/ __  / / / / /    / ___/ __/ _ \/ __ `/ / _ \/ ___/
+ (__  ) /_/ /_/ / /  __/ / / /  / /_/ / /_/ /  / __/ /  / /  __/ / / / /_/ / / /_/ /    (__  ) /_/  __/ /_/ / /  __/ /    
+/____/\__/\____/_/\___/_/ /_/  /_.___/\__, /  /_/ /_/  /_/\___/_/ /_/\__,_/_/\__, /____/____/\__/\___/\__,_/_/\___/_/     
+                                     /____/                                 /____/_____/                                  
+--]]
+
 dbgChars.config = dbgChars.config or {}
 
 dbgChars.config.names = {
@@ -28,7 +40,6 @@ dbgChars.config.playerModels = {
 	['models/humans/octo/female_01.mdl'] = {
 		name = 'Женщина 1',
 		skins = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,21,22,23,24,25,26,27,28,29},
-		faceIndex = 4,
 		faces = {
 			'models/humans/modern/female/female_01/facemap_01_01',
 			'models/humans/modern/female/female_01/facemap_01_02',
@@ -44,7 +55,6 @@ dbgChars.config.playerModels = {
 	['models/humans/octo/female_02.mdl'] = {
 		name = 'Женщина 2',
 		skins = {0,1,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,22,23,24,25,26,27,28,29,30},
-		faceIndex = 2,
 		faces = {
 			'models/humans/modern/female/female_02/facemap_02_01',
 			'models/humans/modern/female/female_02/facemap_02_02',
@@ -58,7 +68,6 @@ dbgChars.config.playerModels = {
 	['models/humans/octo/female_03.mdl'] = {
 		name = 'Женщина 3',
 		skins = {0,1,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,22,23,24,25,26,27,28,29,30},
-		faceIndex = 0,
 		faces = {
 			'models/humans/modern/female/female_03/facemap_03_01',
 			'models/humans/modern/female/female_03/facemap_03_02',
@@ -73,7 +82,6 @@ dbgChars.config.playerModels = {
 	['models/humans/octo/female_04.mdl'] = {
 		name = 'Женщина 4',
 		skins = {0,1,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,22,23,24,25,26,27,28,29,30},
-		faceIndex = 0,
 		faces = {
 			'models/humans/modern/female/female_04/facemap_04_01',
 			'models/humans/modern/female/female_04/facemap_04_02',
@@ -87,7 +95,6 @@ dbgChars.config.playerModels = {
 	['models/humans/octo/female_06.mdl'] = {
 		name = 'Женщина 6',
 		skins = {0,1,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,22,23,24,25,26,27,28,29,30},
-		faceIndex = 3,
 		faces = {
 			'models/humans/modern/female/female_06/facemap_06_01',
 			'models/humans/modern/female/female_06/facemap_06_02',
@@ -102,7 +109,6 @@ dbgChars.config.playerModels = {
 	['models/humans/octo/female_07.mdl'] = {
 		name = 'Женщина 7',
 		skins = {0,1,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,22,23,24,25,26,27,28,29,30},
-		faceIndex = 4,
 		faces = {
 			'models/humans/modern/female/female_07/facemap_07_01',
 			'models/humans/modern/female/female_07/facemap_07_02',
@@ -119,7 +125,6 @@ dbgChars.config.playerModels = {
 	['models/humans/octo/male_01_01.mdl'] = {
 		name = 'Мужчина 1',
 		skins = {0,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,22,23},
-		faceIndex = 1,
 		faces = {
 			'models/humans/modern/male/male_01/facemap_01',
 			'models/humans/modern/male/male_01/facemap_02',
@@ -136,7 +141,6 @@ dbgChars.config.playerModels = {
 	['models/humans/octo/male_02_01.mdl'] = {
 		name = 'Мужчина 2',
 		skins = {0,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,22,23},
-		faceIndex = 0,
 		faces = {
 			'models/humans/modern/male/male_02/facemap_01',
 			'models/humans/modern/male/male_02/facemap_02',
@@ -154,7 +158,6 @@ dbgChars.config.playerModels = {
 	['models/humans/octo/male_03_01.mdl'] = {
 		name = 'Мужчина 3',
 		skins = {0,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,22,23},
-		faceIndex = 3,
 		faces = {
 			'models/humans/modern/male/male_03/facemap_01',
 			'models/humans/modern/male/male_03/facemap_02',
@@ -172,7 +175,6 @@ dbgChars.config.playerModels = {
 	['models/humans/octo/male_04_01.mdl'] = {
 		name = 'Мужчина 4',
 		skins = {0,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,22,23},
-		faceIndex = 2,
 		faces = {
 			'models/humans/modern/male/male_04/facemap_01',
 			'models/humans/modern/male/male_04/facemap_02',
@@ -194,7 +196,6 @@ dbgChars.config.playerModels = {
 	['models/humans/octo/male_05_01.mdl'] = {
 		name = 'Мужчина 5',
 		skins = {0,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,22,23},
-		faceIndex = 0,
 		faces = {
 			'models/humans/modern/male/male_05/facemap_01',
 			'models/humans/modern/male/male_05/facemap_02',
@@ -213,7 +214,6 @@ dbgChars.config.playerModels = {
 	['models/humans/octo/male_06_01.mdl'] = {
 		name = 'Мужчина 6',
 		skins = {0,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,22,23},
-		faceIndex = 3,
 		faces = {
 			'models/humans/modern/male/male_06/facemap_01',
 			'models/humans/modern/male/male_06/facemap_02',
@@ -235,7 +235,6 @@ dbgChars.config.playerModels = {
 	['models/humans/octo/male_07_01.mdl'] = {
 		name = 'Мужчина 7',
 		skins = {0,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,22,23},
-		faceIndex = 3,
 		faces = {
 			'models/humans/modern/male/male_07/facemap_01',
 			'models/humans/modern/male/male_07/facemap_02',
@@ -255,7 +254,6 @@ dbgChars.config.playerModels = {
 	['models/humans/octo/male_08_01.mdl'] = {
 		name = 'Мужчина 8',
 		skins = {0,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,22,23},
-		faceIndex = 4,
 		faces = {
 			'models/humans/modern/male/male_08/facemap_01',
 			'models/humans/modern/male/male_08/facemap_02',
@@ -275,7 +273,6 @@ dbgChars.config.playerModels = {
 	['models/humans/octo/male_09_01.mdl'] = {
 		name = 'Мужчина 9',
 		skins = {0,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,22,23},
-		faceIndex = 4,
 		faces = {
 			'models/humans/modern/male/male_09/facemap_01',
 			'models/humans/modern/male/male_09/facemap_02',
@@ -292,20 +289,5 @@ dbgChars.config.playerModels = {
 			'models/bloo_ltcom_zel/citizens/facemaps/erdim_facemap11',
 			'models/humans/male/group01/jensface',
 		},
-	},
-}
-
-dbgChars.config.selector = {
-	rp_evocity_dbg_251024 = {
-		pos = Vector(-7478.599609, -7916.663086, 512.031250),
-		ang = Angle(2.136044, 90, 0),
-	},
-	rp_eastcoast_dbg_240821 = {
-		pos = Vector(-1303, 2148, 192),
-		ang = Angle(0, 75, 0),
-	},
-	default = {
-		pos = Vector(),
-		ang = Angle(),
 	},
 }
