@@ -38,8 +38,8 @@ local function succ(ply, ent)
 
 end
 
-local pushSounds = {'weapons/357/357_reload1.wav', 'weapons/357/357_reload3.wav', 'weapons/357/357_reload4.wav'}
-local failSounds = {'weapons/crowbar/crowbar_impact1.wav', 'weapons/crowbar/crowbar_impact2.wav'}
+local pushSounds = {'lockpick/lockpick_pick_01.ogg', 'lockpick/lockpick_pick_02.ogg', 'lockpick/lockpick_pick_03.ogg', 'lockpick/lockpick_pick_04.ogg', 'lockpick/lockpick_pick_05.ogg'}
+local failSounds = {'lockpick/lockpick_break.ogg'}
 
 local function fail(ply, ent)
 
