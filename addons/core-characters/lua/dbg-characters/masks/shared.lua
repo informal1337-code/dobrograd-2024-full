@@ -1,15 +1,3 @@
---[[
-Server Name: [#] Новый Доброград – Зима ❄️
-Server IP:   46.174.50.64:27015
-File Path:   addons/core-characters/lua/dbg-characters/masks/shared.lua
-		 __        __              __             ____     _                ____                __             __         
-   _____/ /_____  / /__  ____     / /_  __  __   / __/____(_)__  ____  ____/ / /_  __     _____/ /____  ____ _/ /__  _____
-  / ___/ __/ __ \/ / _ \/ __ \   / __ \/ / / /  / /_/ ___/ / _ \/ __ \/ __  / / / / /    / ___/ __/ _ \/ __ `/ / _ \/ ___/
- (__  ) /_/ /_/ / /  __/ / / /  / /_/ / /_/ /  / __/ /  / /  __/ / / / /_/ / / /_/ /    (__  ) /_/  __/ /_/ / /  __/ /    
-/____/\__/\____/_/\___/_/ /_/  /_.___/\__, /  /_/ /_/  /_/\___/_/ /_/\__,_/_/\__, /____/____/\__/\___/\__,_/_/\___/_/     
-                                     /____/                                 /____/_____/                                  
---]]
-
 dbgChars.masks = dbgChars.masks or {}
 local plyMeta = FindMetaTable('Player')
 
@@ -91,11 +79,22 @@ end
 
 function plyMeta:CanUnmask(slot)
 	local curMasks = self:GetNetVar('hMask')
-	if not curMasks then return end
+	if not curMasks then return false end
 
-	local data = curMasks[slot]
-	if not data then return end
-	return istable(data)
+	-- а если в слоте будет дизорик, то все поломается
+	if slot then
+		local data = curMasks[slot]
+		return data and istable(data)
+	end
+
+	-- проверяем есть ли хотя бы одна снимаемая маска -- да щиткодер поговори тут еще пузян
+	for _, data in pairs(curMasks) do
+		if istable(data) then
+			return true
+		end
+	end
+
+	return false
 end
 
 function dbgChars.masks.getMaskSlots(maskId)
