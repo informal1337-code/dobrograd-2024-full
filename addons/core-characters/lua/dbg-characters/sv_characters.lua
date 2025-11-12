@@ -27,7 +27,13 @@ local function savePresetsToData(ply, presets) -- аа говно shit фуу
     file.CreateDir('dbg_characters')
     file.Write('dbg_characters/' .. steamID .. '.txt', util.TableToJSON(presets or {}))
 end
+function dbgChars.sanitizeName(name)
+    return string.Trim(octolib.string.camel(octolib.string.stripNonCyrillic(utf8.sub(name, 1, 35))))
+end
 
+function dbgChars.sanitizeDescription(desc)
+    return string.Trim(octolib.string.stripNonWord(utf8.sub(desc, 1, 350), ',:%.0-9-;%(%)%/%"%\'a-zA-Z'))
+end
 local function loadPresetsFromData(ply)
     if not IsValid(ply) then return {} end
     
@@ -168,9 +174,11 @@ local function getRandomModel()
 end
 
 local function getRandomName(isMale)
-    local names = isMale and {'Иван', 'Петр', 'Сергей', 'Алексей', 'Дмитрий'} or {'Мария', 'Анна', 'Елена', 'Ольга', 'Наталья'}
-    local surnames = {'Иванов', 'Петров', 'Сидоров', 'Смирнов', 'Кузнецов'}
-    return names[math.random(#names)] .. ' ' .. surnames[math.random(#surnames)]
+    local namePool = isMale and dbgChars.config.names.male or dbgChars.config.names.female
+    local name = namePool[math.random(#namePool)]
+    local surname = dbgChars.config.names.surnames[math.random(#dbgChars.config.names.surnames)]
+
+    return ('%s %s'):format(name, surname)
 end
 
 local function applyPresetAppearance(ply, preset)
@@ -217,9 +225,23 @@ local function spawnPlayer(ply)
         local jobCmd = selectedPreset.jobCmd or 'citizen'
         local desc = selectedPreset.desc
 
-        local job, jobID = DarkRP.getJobByCommand(jobCmd)
+        local job, jobID
+        for _, v in ipairs(RPExtraTeams) do
+            if v.command == jobCmd then
+                job = v
+                jobID = v.team
+                break
+            end
+        end
+
         if not job or job.noPreference or (job.customCheck and (not job.customCheck(ply))) then
-            job, jobID = DarkRP.getJobByCommand('citizen')
+            for _, v in ipairs(RPExtraTeams) do
+                if v.command == 'citizen' then
+                    job = v
+                    jobID = v.team
+                    break
+                end
+            end
         end
 
         if ply:Team() ~= jobID then
@@ -241,7 +263,7 @@ local function spawnPlayer(ply)
         local desc = ply:GetInfo('dbgChars.desc') or ''
         
         local hasValidData = name and name ~= '' and model and model ~= '' and allowedModels[model]
-        
+
         if not hasValidData then
             model, skin = getRandomModel()
             name = getRandomName(octolib.models.isMale(model))
@@ -265,19 +287,32 @@ local function spawnPlayer(ply)
             ply:ConCommand('dbgChars.skin "0"')
         end
 
-        local job, jobID = DarkRP.getJobByCommand(jobCmd)
+        local job, jobID
+        for _, v in ipairs(RPExtraTeams) do
+            if v.command == jobCmd then
+                job = v
+                jobID = v.team
+                break
+            end
+        end
+
         if not job or job.noPreference or (job.customCheck and (not job.customCheck(ply))) then
-            job, jobID = DarkRP.getJobByCommand('citizen')
+            for _, v in ipairs(RPExtraTeams) do
+                if v.command == 'citizen' then
+                    job = v
+                    jobID = v.team
+                    break
+                end
+            end
             ply:ConCommand('dbgChars.job citizen')
         end
 
-        name = string.Trim(octolib.string.camel(octolib.string.stripNonWord(name)))
+        name = dbgChars.sanitizeName(name)
         if name == '' then
             name = getRandomName(octolib.models.isMale(model))
             ply:ConCommand('dbgChars.name "' .. name .. '"')
         end
         
-        name = utf8.sub(name, 1, 35)
         if not string.find(name, ' ') then
             name = getRandomName(octolib.models.isMale(model))
             ply:ConCommand('dbgChars.name "' .. name .. '"')
@@ -401,9 +436,29 @@ local function respawnRequest(ply)
     end
 
     local jobCmd = ply:GetInfo('dbgChars.job') or 'citizen'
-    local job, jobID = DarkRP.getJobByCommand(jobCmd)
+
+    local job, jobID
+    for _, v in ipairs(RPExtraTeams) do
+        if v.command == jobCmd then
+            job = v
+            jobID = v.team
+            break
+        end
+    end
+
     if not job then
-        ply:Notify('warning', 'Профессия не найдена')
+        jobCmd = 'citizen'
+        for _, v in ipairs(RPExtraTeams) do
+            if v.command == 'citizen' then
+                job = v
+                jobID = v.team
+                break
+            end
+        end
+    end
+
+    if not job then
+        ply:Notify('warning', 'Профессия гражданин не найдена')
         return
     end
 

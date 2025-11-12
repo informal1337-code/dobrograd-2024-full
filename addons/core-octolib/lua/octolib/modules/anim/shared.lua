@@ -2,5 +2,5 @@ octolib.include.client('vgui')
 octolib.include.prefixed('.')
 
 if SERVER then
-    octolib.include.sv('anim/sv_anim.lua')
+    octolib.server('sv_anim')
 end

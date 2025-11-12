@@ -10,9 +10,7 @@ function dbgChars.savePreset(preset, id)
     id = id or (#dbgChars.presets + 1)
     dbgChars.presets[id] = preset
     
-    net.Start('dbg-characters.savePresets')
-    net.WriteTable(dbgChars.presets)
-    net.SendToServer()
+    netstream.Start('dbg-characters.savePresets', dbgChars.presets)
     
     hook.Run('dbg-characters.presetsUpdated', dbgChars.presets)
 end
@@ -20,20 +18,16 @@ end
 function dbgChars.removePreset(id)
     table.remove(dbgChars.presets, id)
     
-    net.Start('dbg-characters.savePresets')
-    net.WriteTable(dbgChars.presets)
-    net.SendToServer()
+    netstream.Start('dbg-characters.savePresets', dbgChars.presets)
     
     hook.Run('dbg-characters.presetsUpdated', dbgChars.presets)
 end
 
 function dbgChars.fetchPresetsFromServer()
-    net.Start('dbg-characters.getPresets')
-    net.SendToServer()
+    netstream.Start('dbg-characters.getPresets')
 end
 
-net.Receive('dbg-characters.getPresets', function()
-    local presets = net.ReadTable()
+netstream.Hook('dbg-characters.getPresets', function(presets)
     dbgChars.presets = presets or {}
     hook.Run('dbg-characters.presetsUpdated', dbgChars.presets)
 end)
