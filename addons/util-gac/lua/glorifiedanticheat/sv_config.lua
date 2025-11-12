@@ -255,7 +255,7 @@ gAC.config.IMMUNE_USERS = { -- Set all the people you want to be immune to detec
 
         Your key should look something like this: 1369GJ41970G26891B26AGGFAD526B49
     ]]--
-    gAC.config.STEAM_API_KEY = "EA5C29DA57A70E2DAE67A680BA0616AC" -- Steam API key for the family sharing module.
+    gAC.config.STEAM_API_KEY = "" -- Steam API key for the family sharing module.
 
     gAC.config.ENABLE_FAMILY_SHARE_CHECKS = true -- Whether or not to check if the player is using a family shared account.
 
