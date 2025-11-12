@@ -13,6 +13,19 @@ File Path:   addons/core-octolib/lua/octolib/modules/bind/client.lua
 octolib.bind.handlers = octolib.bind.handlers or {}
 octolib.bind.cache = octolib.bind.cache or {}
 
+util.AddNetworkString('octolib.bind.set')
+util.AddNetworkString('octolib.bind.requestUpdate')
+
+function octolib.bind.sendToServer(id, button, action, data, on)
+    net.Start('octolib.bind.set')
+    net.WriteUInt(id or 0, 8) -- 0 означает новый бинд
+    net.WriteUInt(button or 0, 8)
+    net.WriteString(action or '')
+    net.WriteString(util.TableToJSON(data or {}))
+    net.WriteString(on or 'down')
+    net.SendToServer()
+end
+
 if CFG.serverGroupIDvars ~= CFG.serverGroupID and octolib.vars.get('binds_' .. CFG.serverGroupID) then
 	octolib.vars.set('binds_' .. CFG.serverGroupIDvars, octolib.vars.get('binds_' .. CFG.serverGroupID))
 	octolib.vars.set('binds_' .. CFG.serverGroupID, nil)
@@ -55,22 +68,15 @@ function octolib.bind.registerHandler(id, data)
 	rebuildMapsDebounced()
 end
 
+local oldSet = octolib.bind.set
 function octolib.bind.set(id, button, action, data, on)
-	if button then
-		octolib.bind.cache[id or (#octolib.bind.cache + 1)] = {
-			button = button,
-			action = action,
-			data = data,
-			on = on or 'down',
-		}
-	elseif id then
-		table.remove(octolib.bind.cache, id)
-	else
-		return
-	end
-
-	octolib.vars.set('binds_' .. (CFG.serverGroupIDvars or CFG.serverGroupID), octolib.bind.cache)
-	rebuildMapsDebounced()
+    oldSet(id, button, action, data, on)
+    
+    if button then
+        octolib.bind.sendToServer(id, button, action, data, on)
+    elseif id then
+        octolib.bind.sendToServer(id, nil, nil, nil, nil)
+    end
 end
 
 function octolib.bind.init(id, button, action, data, on)

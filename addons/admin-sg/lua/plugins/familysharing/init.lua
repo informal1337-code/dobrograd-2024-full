@@ -1,9 +1,9 @@
 --[[
-	� 2017 Thriving Ventures Limited do not share, re-distribute or modify
+	� 2017 Thriving Ventures Limited do not share, re-distribute or modify
 	
 	without permission of its author (gustaf@thrivingventures.com).
 ]]
-
+-- ало err да да ПОШЕЛ НАХУЙ
 local plugin = plugin;
 
 plugin:IncludeFile("shared.lua", SERVERGUARD.STATE.SHARED);
@@ -15,7 +15,7 @@ plugin:Hook("CheckPassword", "serverguard.familysharing.CheckFamilySharing", fun
 	http.Fetch(url, function(body)
 		local response = util.JSONToTable(body);
 
-		if (!response or !response.lender_steamid) then
+		if (!response or !istable(response) or !response.lender_steamid) then
 			serverguard.PrintConsole("[familysharing] Failed to check for player '" .. name .. "' [" .. steamID .. "], JSON response not valid.\n");
 			return;
 		end;
@@ -36,6 +36,6 @@ plugin:Hook("CheckPassword", "serverguard.familysharing.CheckFamilySharing", fun
 	end,
 
 	function(error)
-		serverguard.PrintConsole("[familysharing] Failed to check for player '" .. name .. "' [" .. steamID .. "], HTTP Error: " .. tostring(err) .. "\n");
+		serverguard.PrintConsole("[familysharing] Failed to check for player '" .. name .. "' [" .. steamID .. "], HTTP Error: " .. tostring(error) .. "\n");
 	end);
 end);

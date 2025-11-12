@@ -8,4 +8,4 @@ else
     include('cl_init.lua')
 end
 
-include('shared.lua')
+octolib.shared('shared')

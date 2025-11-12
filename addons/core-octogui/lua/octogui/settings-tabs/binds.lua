@@ -7,9 +7,9 @@ hook.Add('octolib.settings.createTabs', 'binds', function(add, buildFuncs)
             local cont = vgui.Create('DScrollPanel', parent)
             cont:SetPaintBackground(false)
             cont:Dock(FILL)
-            
+
             buildFuncs.title(cont, 'Бинды')
-            
+
             octolib.label(cont, 'Чтобы убрать назначение клавиши, нажми правую кнопку мыши')
 
             for i = 1, #octolib.bind.cache do
@@ -20,7 +20,7 @@ hook.Add('octolib.settings.createTabs', 'binds', function(add, buildFuncs)
             octolib.button(cont, 'Создать', function()
                 octolib.bind.set(nil, KEY_SPACE, 'chat', 'Привет!')
             end)
-            
+
             return cont
         end,
     })

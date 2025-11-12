@@ -23,7 +23,7 @@ function octolib.bind.save(steamID, binds)
         VALUES (?, ?, ?) 
         ON DUPLICATE KEY UPDATE binds = ?, updated_at = NOW()
     ]], {
-        steamID, 
+        steamID,
         util.TableToJSON(binds),
         CFG.serverGroupIDvars or CFG.serverGroupID,
         util.TableToJSON(binds)
@@ -46,3 +46,37 @@ function octolib.bind.load(steamID, callback)
         end
     end)
 end
+
+
+net.Receive('octolib.bind.set', function(len, ply)
+    local id = net.ReadUInt(8)
+    local button = net.ReadUInt(8)
+    local action = net.ReadString()
+    local data = net.ReadString()
+    local on = net.ReadString()
+
+    -- if button = 0, значит это удаление
+    if button == 0 then
+
+        if id > 0 then
+            table.remove(octolib.bind.cache, id)
+        end
+    else
+        local bindData = {
+            button = button,
+            action = action,
+            data = util.JSONToTable(data) or {},
+            on = on
+        }
+
+        if id == 0 then
+            table.insert(octolib.bind.cache, bindData)
+        else
+            octolib.bind.cache[id] = bindData
+        end
+    end
+
+    octolib.bind.save(ply:SteamID(), octolib.bind.cache)
+
+    octolib.bind.sync(ply)
+end)
