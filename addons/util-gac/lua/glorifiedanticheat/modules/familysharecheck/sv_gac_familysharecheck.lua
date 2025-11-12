@@ -3,6 +3,7 @@ local _string_len = string.len
 local _tonumber = tonumber
 local _util_JSONToTable = util.JSONToTable
 local _http_Fetch = http.Fetch
+local _timer_Simple = timer.Simple
 local _timer_Create = timer.Create
 local _timer_Remove = timer.Remove
 local _player_GetAll = player.GetAll
