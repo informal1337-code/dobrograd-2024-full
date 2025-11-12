@@ -24,7 +24,7 @@
         -- WARNING: AntiLua can be CPU intensive depending on how it is configured.
         -- I've tried my best to make this as minimal as possible to reserve resources for the server.
         -- Only use this if your server has enough resources to spare.
-        gAC.config.AntiLua_CHECK = false
+        gAC.config.AntiLua_CHECK = true
 
         -- Please read sv-config for more info on this config.
         gAC.config.AntiLua_IgnoreBoot = true
