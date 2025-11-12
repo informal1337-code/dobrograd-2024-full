@@ -1,7 +1,19 @@
+--[[
+Server Name: [#] Новый Доброград – Зима ❄️
+Server IP:   46.174.50.64:27015
+File Path:   addons/feature-map/lua/octomap/vgui_map.lua
+		 __        __              __             ____     _                ____                __             __         
+   _____/ /_____  / /__  ____     / /_  __  __   / __/____(_)__  ____  ____/ / /_  __     _____/ /____  ____ _/ /__  _____
+  / ___/ __/ __ \/ / _ \/ __ \   / __ \/ / / /  / /_/ ___/ / _ \/ __ \/ __  / / / / /    / ___/ __/ _ \/ __ `/ / _ \/ ___/
+ (__  ) /_/ /_/ / /  __/ / / /  / /_/ / /_/ /  / __/ /  / /  __/ / / / /_/ / / /_/ /    (__  ) /_/  __/ /_/ / /  __/ /    
+/____/\__/\____/_/\___/_/ /_/  /_.___/\__, /  /_/ /_/  /_/\___/_/ /_/\__,_/_/\__, /____/____/\__/\___/\__,_/_/\___/_/     
+                                     /____/                                 /____/_____/                                  
+--]]
+
 local config = octomap.config
 
 local PANEL = {}
-
+--333
 function PANEL:Init()
 
 	self:Dock(FILL)
@@ -27,13 +39,29 @@ function PANEL:Paint(w, h)
 	draw.NoTexture()
 	surface.SetDrawColor(config.bgCol)
 	surface.DrawRect(0, 0, w, h)
-	surface.SetMaterial(octomap.material)
+	surface.SetMaterial(octomap.materials.map)
 	surface.SetDrawColor(255,255,255, 255)
 	surface.DrawTexturedRect(mx, my, mw, mh)
+	
+	if octomap.materials.streets and octolib.vars.get('octomap.streets') then
+		surface.SetMaterial(octomap.materials.streets)
+		surface.DrawTexturedRect(mx, my, mw, mh)
+	end
+
+	if octomap.materials.houses and octolib.vars.get('octomap.houses') then
+		surface.SetMaterial(octomap.materials.houses)
+		surface.DrawTexturedRect(mx, my, mw ,mh)
+	end
 
 	for id, marker in pairs(octomap.markers) do
 		local x, y = centerOffX + math.Round(marker.x * scale), centerOffY + math.Round(marker.y * scale)
 		marker:Paint(x, y, self)
+	end
+	
+	for id, marker in pairs(octomap.markers) do
+		if not marker.PostPaint then continue end
+		local x, y = centerOffX + math.Round(marker.x * scale), centerOffY + math.Round(marker.y * scale)
+		marker:PostPaint(x, y, self)
 	end
 
 end

@@ -12,7 +12,7 @@ local defaults = {
 	icon = 'icon16/house.png',
 	iconOffset = {0, 0},
 	iconSize = 16,
-}
+}--ss
 
 local icons = {
 	layerUp = Material('octoteam/icons-16/bullet_up.png'),
@@ -132,32 +132,47 @@ function Marker:SetID(id)
 end
 
 function Marker:SetPos(x, y, z)
-
 	x, y = x or 0, y or 0
-	self.x, self.y, self.z = octomap.worldToMap(x, y, z)
+
+	if octomap.worldToMap then
+		self.x, self.y, self.z = octomap.worldToMap(x, y, z)
+	else
+		self.x, self.y, self.z = x, y, z
+		timer.Simple(0, function()
+			if self and octomap.worldToMap then
+				self.x, self.y, self.z = octomap.worldToMap(x, y, z)
+				if octomap.config and octomap.config.getMapLayer then
+					self.layer = octomap.config.getMapLayer(self.z or 0)
+				end
+			end
+		end)
+	end
+
 	self.cachedWorldX, self.cachedWorldY = nil
-	if config.getMapLayer then
-		self.layer = config.getMapLayer(self.z or 0)
+
+	if octomap.config and octomap.config.getMapLayer then
+		self.layer = octomap.config.getMapLayer(self.z or 0)
 	end
 
 	return self
-
 end
 
 function Marker:GetPos()
-
 	if not self.cachedWorldX then
-		self.cachedWorldX, self.cachedWorldY = octomap.mapToWorld(self.x, self.y)
+		if octomap.mapToWorld then
+			self.cachedWorldX, self.cachedWorldY = octomap.mapToWorld(self.x, self.y)
+		else
+			self.cachedWorldX, self.cachedWorldY = self.x, self.y
+		end
 	end
 
 	return self.cachedWorldX, self.cachedWorldY
-
 end
 
 function Marker:SetMapPos(x, y, z)
 
 	x, y = x or 0, y or 0
-	self.x, self.y = x, y 
+	self.x, self.y = x, y
 	self.z = z or self.z
 	self.cachedWorldX, self.cachedWorldY = nil
 	if config.getMapLayer then

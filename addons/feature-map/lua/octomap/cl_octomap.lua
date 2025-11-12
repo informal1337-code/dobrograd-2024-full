@@ -1,4 +1,19 @@
-octomap.material = Material('octoteam/icons/clock.png')
+--[[
+Server Name: [#] Новый Доброград – Зима ❄️
+Server IP:   46.174.50.64:27015
+File Path:   addons/feature-map/lua/octomap/cl_octomap.lua
+		 __        __              __             ____     _                ____                __             __         
+   _____/ /_____  / /__  ____     / /_  __  __   / __/____(_)__  ____  ____/ / /_  __     _____/ /____  ____ _/ /__  _____
+  / ___/ __/ __ \/ / _ \/ __ \   / __ \/ / / /  / /_/ ___/ / _ \/ __ \/ __  / / / / /    / ___/ __/ _ \/ __ `/ / _ \/ ___/
+ (__  ) /_/ /_/ / /  __/ / / /  / /_/ / /_/ /  / __/ /  / /  __/ / / / /_/ / / /_/ /    (__  ) /_/  __/ /_/ / /  __/ /    
+/____/\__/\____/_/\___/_/ /_/  /_.___/\__, /  /_/ /_/  /_/\___/_/ /_/\__,_/_/\__, /____/____/\__/\___/\__,_/_/\___/_/     
+                                     /____/                                 /____/_____/                                  
+--]]
+--sss
+octomap.materials = octomap.materials or {}
+octomap.materials.map = Material('octoteam/icons/clock.png')
+octomap.materials.streets = nil
+octomap.materials.houses = nil
 
 for k, v in pairs({
 	url = 'goEUmT0.jpg',
@@ -24,22 +39,17 @@ end
 
 local config = octomap.config
 
-function octomap.reloadMainMaterial()
+function octomap.reloadMaterials(force)
 
-	local pathFile = 'imgscreen/' .. config.url
-	local pathImg = '../data/' .. pathFile
-
-	if file.Exists(pathFile, 'DATA') then
-		octomap.material = Material(pathImg)
-		return
-	end
-
-	http.Fetch(octolib.imgurImage(config.url), function(content)
-		file.Write(pathFile, content)
-		local matName = pathImg:gsub('%.png', '')
-		RunConsoleCommand('mat_reloadmaterial', matName)
-		octomap.material = Material(pathImg)
-	end)
+	octomap.materials.map = octolib.getImgurMaterial(config.url, function(material)
+		octomap.materials.map = material
+	end, force)
+	octomap.materials.streets = config.streetsUrl and octolib.getImgurMaterial(config.streetsUrl, function(material)
+		octomap.materials.streets = material
+	end, force) or nil
+	octomap.materials.houses = config.buildingsUrl and octolib.getImgurMaterial(config.buildingsUrl, function(material)
+		octomap.materials.houses = material
+	end, force) or nil
 
 end
 
@@ -57,11 +67,30 @@ function octomap.mapToWorld(x, y, z)
 
 end
 
-hook.Add('octolib.imgur.loaded', 'octomap', octomap.reloadMainMaterial)
+hook.Add('octolib.imgur.loaded', 'octomap', octomap.reloadMaterials)
 if octolib and octolib.imgurLoaded and octolib.imgurLoaded() then
-	octomap.reloadMainMaterial()
+	octomap.reloadMaterials()
 end
 
 if config.updateMap then
 	timer.Create('octomap.update', 1, 0, config.updateMap)
 end
+
+hook.Add('octolib.markers.added', 'octomap', function(marker)
+	local mapMarker = octomap.createMarker(marker.id or ('marker_' .. tostring(marker)))
+	mapMarker:SetIcon(marker.icon or 'octoteam/icons-16/location_pin_white.png')
+	mapMarker:SetIconSize(marker.size)
+	mapMarker:SetColor(not marker.icon and marker.col)
+	mapMarker:SetPos(marker.pos)
+	mapMarker.temp = true
+	mapMarker.sort = 1500
+	marker.mapMarker = mapMarker
+
+	mapMarker:AddToSidebar(marker.txt or 'Маркер', marker.group)
+end)
+
+hook.Add('octolib.markers.removed', 'octomap', function(marker)
+	if marker.mapMarker then
+		marker.mapMarker:Remove()
+	end
+end)
