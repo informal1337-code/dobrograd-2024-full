@@ -17,18 +17,18 @@ util.AddNetworkString('octolib.bind.set')
 util.AddNetworkString('octolib.bind.requestUpdate')
 
 function octolib.bind.sendToServer(id, button, action, data, on)
-    net.Start('octolib.bind.set')
-    net.WriteUInt(id or 0, 8) -- 0 означает новый бинд
-    net.WriteUInt(button or 0, 8)
-    net.WriteString(action or '')
-    net.WriteString(util.TableToJSON(data or {}))
-    net.WriteString(on or 'down')
-    net.SendToServer()
+net.Start('octolib.bind.set')
+net.WriteUInt(id or 0, 8) -- 0 означает новый бинд
+net.WriteUInt(button or 0, 8)
+net.WriteString(action or '')
+net.WriteString(util.TableToJSON(data or {}))
+net.WriteString(on or 'down')
+net.SendToServer()
 end
 
 if CFG.serverGroupIDvars ~= CFG.serverGroupID and octolib.vars.get('binds_' .. CFG.serverGroupID) then
-	octolib.vars.set('binds_' .. CFG.serverGroupIDvars, octolib.vars.get('binds_' .. CFG.serverGroupID))
-	octolib.vars.set('binds_' .. CFG.serverGroupID, nil)
+octolib.vars.set('binds_' .. CFG.serverGroupIDvars, octolib.vars.get('binds_' .. CFG.serverGroupID))
+octolib.vars.set('binds_' .. CFG.serverGroupID, nil)
 end
 
 local mapDown, mapUp = {}, {}
@@ -70,35 +70,33 @@ end
 
 local oldSet = octolib.bind.set
 function octolib.bind.set(id, button, action, data, on)
-    oldSet(id, button, action, data, on)
-    
-    if button then
-        octolib.bind.sendToServer(id, button, action, data, on)
-    elseif id then
-        octolib.bind.sendToServer(id, nil, nil, nil, nil)
-    end
+oldSet(id, button, action, data, on)
+if button then
+octolib.bind.sendToServer(id, button, action, data, on)
+elseif id then
+octolib.bind.sendToServer(id, nil, nil, nil, nil)
+end
 end
 
 function octolib.bind.init(id, button, action, data, on)
-	local bind = octolib.array.find(octolib.bind.cache, function(v) return v.action == action end)
-	if bind ~= nil then return end
-	octolib.bind.set(id, button, action, data, on)
+local bind = octolib.array.find(octolib.bind.cache, function(v) return v.action == action end)
+if bind ~= nil then return end
+octolib.bind.set(id, button, action, data, on)
 end
 
 function octolib.bind.clientConvar(name, defaultKeyCode, helpText)
-	local returnData = {
-		name = name,
-		defaultKeyCode = defaultKeyCode,
-		conVar = CreateClientConVar(name, defaultKeyCode, true, false, helpText)
-	}
+local returnData = {
+name = name,
+defaultKeyCode = defaultKeyCode,
+conVar = CreateClientConVar(name, defaultKeyCode, true, false, helpText)
+}
 
-	local function updateKeyCode()
-		returnData.keyCode = returnData.conVar:GetInt()
-	end
-	updateKeyCode()
-	cvars.AddChangeCallback(name, updateKeyCode, 'octolib.bind.clientConvar')
-
-	return returnData
+local function updateKeyCode()
+returnData.keyCode = returnData.conVar:GetInt()
+end
+updateKeyCode()
+cvars.AddChangeCallback(name, updateKeyCode, 'octolib.bind.clientConvar')
+return returnData
 end
 
 hook.Add('PlayerButtonDown', 'octolib-bind', function(_, but)
@@ -116,12 +114,12 @@ hook.Add('PlayerButtonUp', 'octolib-bind', function(_, but)
 	local funcs = mapUp[but]
 	if funcs then
 		for _, func in ipairs(funcs) do func() end
-	end
+end
 end)
 net.Receive('octolib.bind.sync', function()
-    local binds = net.ReadTable()
-    octolib.bind.cache = binds
-    rebuildMapsDebounced()
+local binds = net.ReadTable()
+octolib.bind.cache = binds
+rebuildMapsDebounced()
 end)
 
 octolib.bind.cache = octolib.vars.get('binds_' .. (CFG.serverGroupIDvars or CFG.serverGroupID)) or {}
