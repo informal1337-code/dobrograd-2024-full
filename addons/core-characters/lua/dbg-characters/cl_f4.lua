@@ -459,12 +459,12 @@ hook.Add('octogui.f4-tabs', 'dbg-characters', function()
 				e:SetTall(30)
 				e:SetSortItems(false)
 				e.jobs = {}
-				for _, job in ipairs(RPExtraTeams) do
-					if not job.noPreference and (not job.hidden or isfunction(job.customCheck) and select(1, job.customCheck(ply))) then
-						e:AddChoice(job.name, job.command, job.command == octolib.vars.get('dbgChars.job'))
-						table.insert(e.jobs, job)
-					end
-				end
+    			for _, job in ipairs(RPExtraTeams) do
+        			if not job.noPreference and (not job.hidden or isfunction(job.customCheck) and select(1, job.customCheck(ply))) then
+            			e:AddChoice(job.name, job.team, job.team == octolib.vars.get('dbgChars.job'))
+            			table.insert(e.jobs, job)
+        			end
+    			end
 				function e:OnSelect(i, v, data)
 					octolib.vars.set('dbgChars.job', data)
 				end

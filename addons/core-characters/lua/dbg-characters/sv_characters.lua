@@ -222,30 +222,16 @@ local function spawnPlayer(ply)
         applyPresetAppearance(ply, selectedPreset)
         
         local name = selectedPreset.name
-        local jobCmd = selectedPreset.jobCmd or 'citizen'
+        local jobTeam = selectedPreset.jobTeam or 1 -- Используем jobTeam вместо jobCmd
         local desc = selectedPreset.desc
 
-        local job, jobID
-        for _, v in ipairs(RPExtraTeams) do
-            if v.command == jobCmd then
-                job = v
-                jobID = v.team
-                break
-            end
-        end
-
+        local job = RPExtraTeams[jobTeam]
         if not job or job.noPreference or (job.customCheck and (not job.customCheck(ply))) then
-            for _, v in ipairs(RPExtraTeams) do
-                if v.command == 'citizen' then
-                    job = v
-                    jobID = v.team
-                    break
-                end
-            end
+            job = RPExtraTeams[1] -- Гражданин
         end
 
-        if ply:Team() ~= jobID then
-            ply:changeTeam(jobID, true, true)
+        if ply:Team() ~= jobTeam then
+            ply:changeTeam(jobTeam, true, true)
         end
 
         ply:SetName(name)
@@ -259,7 +245,7 @@ local function spawnPlayer(ply)
         local model = ply:GetInfo('dbgChars.model')
         local skin = tonumber(ply:GetInfo('dbgChars.skin') or '0') or 0
         local face = ply:GetInfo('dbgChars.face') or ''
-        local jobCmd = ply:GetInfo('dbgChars.job') or 'citizen'
+        local jobTeam = tonumber(ply:GetInfo('dbgChars.job')) or 1
         local desc = ply:GetInfo('dbgChars.desc') or ''
         
         local hasValidData = name and name ~= '' and model and model ~= '' and allowedModels[model]
@@ -287,24 +273,11 @@ local function spawnPlayer(ply)
             ply:ConCommand('dbgChars.skin "0"')
         end
 
-        local job, jobID
-        for _, v in ipairs(RPExtraTeams) do
-            if v.command == jobCmd then
-                job = v
-                jobID = v.team
-                break
-            end
-        end
-
+        local job = RPExtraTeams[jobTeam]
         if not job or job.noPreference or (job.customCheck and (not job.customCheck(ply))) then
-            for _, v in ipairs(RPExtraTeams) do
-                if v.command == 'citizen' then
-                    job = v
-                    jobID = v.team
-                    break
-                end
-            end
-            ply:ConCommand('dbgChars.job citizen')
+            job = RPExtraTeams[1]
+            jobTeam = 1
+            ply:ConCommand('dbgChars.job 1')
         end
 
         name = dbgChars.sanitizeName(name)
@@ -322,8 +295,8 @@ local function spawnPlayer(ply)
             ply:SetName(name)
         end
 
-        if ply:Team() ~= jobID then
-            ply:changeTeam(jobID, true, true)
+        if ply:Team() ~= jobTeam then
+            ply:changeTeam(jobTeam, true, true)
         end
 
         ply:SetModel(model)
@@ -437,28 +410,11 @@ local function respawnRequest(ply)
 
     local jobCmd = ply:GetInfo('dbgChars.job') or 'citizen'
 
-    local job, jobID
-    for _, v in ipairs(RPExtraTeams) do
-        if v.command == jobCmd then
-            job = v
-            jobID = v.team
-            break
-        end
-    end
+    local jobTeam = tonumber(jobCmd) or 1
+    local job = RPExtraTeams[jobTeam]
 
     if not job then
-        jobCmd = 'citizen'
-        for _, v in ipairs(RPExtraTeams) do
-            if v.command == 'citizen' then
-                job = v
-                jobID = v.team
-                break
-            end
-        end
-    end
-
-    if not job then
-        ply:Notify('warning', 'Профессия гражданин не найдена')
+        ply:Notify('warning', 'Профессия не найдена')
         return
     end
 
