@@ -128,16 +128,19 @@ function octogui.settings.createPanel()
 	local function performLayout(self)
 		self:SizeToChildren(false, true)
 	end
-	local function title(p, txt)
-		local l = p:Add 'DLabel'
-		l:Dock(TOP)
-		l:DockMargin(0,5,0,15)
-		l:SetTall(32)
-		l:SetText(txt)
-		l:SetContentAlignment(5)
-		l:SetFont('f4.medium')
-		return l
-	end
+local function title(p, txt)
+    if not IsValid(p) then return end
+    
+    local l = vgui.Create('DLabel')
+    l:SetParent(p)
+    l:Dock(TOP)
+    l:DockMargin(0,5,0,15)
+    l:SetTall(32)
+    l:SetText(txt)
+    l:SetContentAlignment(5)
+    l:SetFont('f4.medium')
+    return l
+end
 	local function childPanel(p)
 		local cp = p:Add 'DPanel'
 		cp:Dock(TOP)
