@@ -1,5 +1,6 @@
 dbgChars = dbgChars or {}
-
+util.AddNetworkString 'dbg-characters.savePresets'
+util.AddNetworkString 'dbg-characters.getPresets'
 local allowedModels = {
     ['models/humans/octo/female_01.mdl'] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,21,22,23,24,25,26,27,28,29},
     ['models/humans/octo/female_02.mdl'] = {0,1,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,22,23,24,25,26,27,28,29,30},
@@ -27,6 +28,7 @@ local function savePresetsToData(ply, presets) -- аа говно shit фуу
     file.CreateDir('dbg_characters')
     file.Write('dbg_characters/' .. steamID .. '.txt', util.TableToJSON(presets or {}))
 end
+
 function dbgChars.sanitizeName(name)
     return string.Trim(octolib.string.camel(octolib.string.stripNonCyrillic(utf8.sub(name, 1, 35))))
 end
@@ -34,6 +36,7 @@ end
 function dbgChars.sanitizeDescription(desc)
     return string.Trim(octolib.string.stripNonWord(utf8.sub(desc, 1, 350), ',:%.0-9-;%(%)%/%"%\'a-zA-Z'))
 end
+
 local function loadPresetsFromData(ply)
     if not IsValid(ply) then return {} end
     
