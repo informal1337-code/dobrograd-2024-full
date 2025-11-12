@@ -1,6 +1,5 @@
 dbgChars = dbgChars or {}
-util.AddNetworkString 'dbg-characters.savePresets'
-util.AddNetworkString 'dbg-characters.getPresets'
+
 local allowedModels = {
     ['models/humans/octo/female_01.mdl'] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,21,22,23,24,25,26,27,28,29},
     ['models/humans/octo/female_02.mdl'] = {0,1,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,22,23,24,25,26,27,28,29,30},
@@ -19,7 +18,7 @@ local allowedModels = {
     ['models/humans/octo/male_09_01.mdl'] = {0,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,22,23},
 }
 
-local function savePresetsToData(ply, presets) -- аа говно shit фуу
+local function savePresetsToData(ply, presets)
     if not IsValid(ply) then return end
     
     local steamID = ply:SteamID()
@@ -190,22 +189,9 @@ local function applyPresetAppearance(ply, preset)
     ply:SetModel(preset.model)
     ply:SetSkin(preset.skin or 0)
 
-    for i = 0, ply:GetNumMaterials() - 1 do
-        local mat = ply:GetMaterial(i)
-        if mat and string.match(mat, 'facemap') then
-            ply:SetSubMaterial(i, '')
-        end
-    end
-
-    if preset.face and preset.face ~= '' then
-        for i = 0, ply:GetNumMaterials() - 1 do
-            local mat = ply:GetMaterial(i)
-            if mat and string.match(mat, 'facemap') then
-                ply:SetSubMaterial(i, preset.face)
-                break
-            end
-        end
-    end
+if preset.face and preset.face ~= '' then
+    ply:SetSubMaterial(0, preset.face)
+end
 
     if preset.voice then
         ply:SetNetVar('Voice', preset.voice)
@@ -220,21 +206,35 @@ local function spawnPlayer(ply)
     if not ply.passedTest then return end
 
     local selectedPreset = ply:GetNetVar('SelectedPreset')
-    
+
     if selectedPreset then
         applyPresetAppearance(ply, selectedPreset)
-        
+
         local name = selectedPreset.name
-        local jobTeam = selectedPreset.jobTeam or 1 -- Используем jobTeam вместо jobCmd
+        local jobCmd = selectedPreset.jobCmd or 'citizen'
         local desc = selectedPreset.desc
 
-        local job = RPExtraTeams[jobTeam]
-        if not job or job.noPreference or (job.customCheck and (not job.customCheck(ply))) then
-            job = RPExtraTeams[1] -- Гражданин
+        local job, jobID
+        for _, v in ipairs(RPExtraTeams) do
+            if v.command == jobCmd then
+                job = v
+                jobID = v.team
+                break
+            end
         end
 
-        if ply:Team() ~= jobTeam then
-            ply:changeTeam(jobTeam, true, true)
+        if not job or job.noPreference or (job.customCheck and (not job.customCheck(ply))) then
+            for _, v in ipairs(RPExtraTeams) do
+                if v.command == 'citizen' then
+                    job = v
+                    jobID = v.team
+                    break
+                end
+            end
+        end
+
+        if ply:Team() ~= jobID then
+            ply:changeTeam(jobID, true, true)
         end
 
         ply:SetName(name)
@@ -244,97 +244,111 @@ local function spawnPlayer(ply)
             ply:SetNetVar('dbgDesc', desc)
         end
     else
-        local name = ply:GetInfo('dbgChars.name')
-        local model = ply:GetInfo('dbgChars.model')
-        local skin = tonumber(ply:GetInfo('dbgChars.skin') or '0') or 0
-        local face = ply:GetInfo('dbgChars.face') or ''
-        local jobTeam = tonumber(ply:GetInfo('dbgChars.job')) or 1
-        local desc = ply:GetInfo('dbgChars.desc') or ''
-        
-        local hasValidData = name and name ~= '' and model and model ~= '' and allowedModels[model]
-
-        if not hasValidData then
-            model, skin = getRandomModel()
-            name = getRandomName(octolib.models.isMale(model))
+        ply:GetClientVar({
+            'dbgChars.name',
+            'dbgChars.model', 
+            'dbgChars.skin',
+            'dbgChars.face',
+            'dbgChars.job',
+            'dbgChars.desc'
+        }, function(vars)
+            local name = vars['dbgChars.name'] or ''
+            local model = vars['dbgChars.model'] or ''
+            local skin = tonumber(vars['dbgChars.skin'] or '0') or 0
+            local face = vars['dbgChars.face'] or ''
+            local jobCmd = vars['dbgChars.job'] or 'citizen'
+            local desc = vars['dbgChars.desc'] or ''
             
-            ply:ConCommand('dbgChars.name "' .. name .. '"')
-            ply:ConCommand('dbgChars.model "' .. model .. '"')
-            ply:ConCommand('dbgChars.skin "' .. skin .. '"')
-            ply:ConCommand('dbgChars.job "citizen"')
-            ply:ConCommand('dbgChars.desc ""')
-        end
+            local hasValidData = name and name ~= '' and model and model ~= '' and allowedModels[model]
 
-        local ok = allowedModels[model]
-        if not ok or not util.IsValidModel(model) then
-            model, skin = getRandomModel()
-            ply:ConCommand('dbgChars.model "' .. model .. '"')
-            ply:ConCommand('dbgChars.skin "' .. skin .. '"')
-        end
+            if not hasValidData then
+                model, skin = getRandomModel()
+                name = getRandomName(octolib.models.isMale(model))
+                
+                ply:SetClientVar('dbgChars.name', name)
+                ply:SetClientVar('dbgChars.model', model)
+                ply:SetClientVar('dbgChars.skin', skin)
+                ply:SetClientVar('dbgChars.job', 'citizen')
+                ply:SetClientVar('dbgChars.desc', '')
+            end
 
-        if skin < 0 or skin > 32 or (istable(ok) and not table.HasValue(ok, skin)) then
-            skin = 0
-            ply:ConCommand('dbgChars.skin "0"')
-        end
+            local ok = allowedModels[model]
+            if not ok or not util.IsValidModel(model) then
+                model, skin = getRandomModel()
+                ply:SetClientVar('dbgChars.model', model)
+                ply:SetClientVar('dbgChars.skin', skin)
+            end
 
-        local job = RPExtraTeams[jobTeam]
-        if not job or job.noPreference or (job.customCheck and (not job.customCheck(ply))) then
-            job = RPExtraTeams[1]
-            jobTeam = 1
-            ply:ConCommand('dbgChars.job 1')
-        end
+            if skin < 0 or skin > 32 or (istable(ok) and not table.HasValue(ok, skin)) then
+                skin = 0
+                ply:SetClientVar('dbgChars.skin', 0)
+            end
 
-        name = dbgChars.sanitizeName(name)
-        if name == '' then
-            name = getRandomName(octolib.models.isMale(model))
-            ply:ConCommand('dbgChars.name "' .. name .. '"')
-        end
-        
-        if not string.find(name, ' ') then
-            name = getRandomName(octolib.models.isMale(model))
-            ply:ConCommand('dbgChars.name "' .. name .. '"')
-        end
-
-        if ply:Name() ~= name then
-            ply:SetName(name)
-        end
-
-        if ply:Team() ~= jobTeam then
-            ply:changeTeam(jobTeam, true, true)
-        end
-
-        ply:SetModel(model)
-        ply:SetSkin(skin)
-        
-        if face and face ~= '' then
-            for i, mat in ipairs(ply:GetMaterials()) do
-                if string.match(mat, '.+/sheet_%d+') then
-                    ply:SetSubMaterial(i-1, face)
+            local job, jobID
+            for _, v in ipairs(RPExtraTeams) do
+                if v.command == jobCmd then
+                    job = v
+                    jobID = v.team
+                    break
                 end
             end
-        else
-            for i, mat in ipairs(ply:GetMaterials()) do
-                if string.match(mat, '.+/sheet_%d+') then
-                    ply:SetSubMaterial(i-1, nil)
-                end
-            end
-        end
 
-        if desc == '' then desc = nil end
-        ply:SetNetVar('dbgDesc', desc)
-        ply:SetSalary(job.salary)
+            if not job or job.noPreference or (job.customCheck and (not job.customCheck(ply))) then
+                for _, v in ipairs(RPExtraTeams) do
+                    if v.command == 'citizen' then
+                        job = v
+                        jobID = v.team
+                        break
+                    end
+                end
+                ply:SetClientVar('dbgChars.job', 'citizen')
+            end
+
+            name = dbgChars.sanitizeName(name)
+            if name == '' then
+                name = getRandomName(octolib.models.isMale(model))
+                ply:SetClientVar('dbgChars.name', name)
+            end
+
+            if not string.find(name, ' ') then
+                name = getRandomName(octolib.models.isMale(model))
+                ply:SetClientVar('dbgChars.name', name)
+            end
+
+            if ply:Name() ~= name then
+                ply:SetName(name)
+            end
+
+            if ply:Team() ~= jobID then
+                ply:changeTeam(jobID, true, true)
+            end
+
+            ply:SetModel(model)
+            ply:SetSkin(skin)
+ 
+if face and face ~= '' then
+    ply:SetSubMaterial(0, face)
+else
+    ply:SetSubMaterial(0, nil)
+end
+
+            if desc == '' then desc = nil end
+            ply:SetNetVar('dbgDesc', desc)
+            ply:SetSalary(job.salary)
+
+            ply:SetNetVar('dbgLook', {
+                name = 'playerName',
+                nameRender = true,
+                desc = 'playerDesc',
+                descRender = true,
+                checkLoader = 'playerLoader',
+                time = 0.75,
+                bone = 'ValveBiped.Bip01_Head1',
+                posAbs = Vector(0, 0, 10),
+                lookOff = Vector(0, -100, 0),
+            })
+        end)
     end
-
-    ply:SetNetVar('dbgLook', {
-        name = 'playerName',
-        nameRender = true,
-        desc = 'playerDesc',
-        descRender = true,
-        checkLoader = 'playerLoader',
-        time = 0.75,
-        bone = 'ValveBiped.Bip01_Head1',
-        posAbs = Vector(0, 0, 10),
-        lookOff = Vector(0, -100, 0),
-    })
 end
 
 hook.Add('PlayerSpawn', 'dbg-char.spawn', spawnPlayer)
@@ -394,49 +408,6 @@ local function enableCharRespawn(ply, pos)
     ply:Notify('Идите в указанное место для смены персонажа')
 end
 
-local function respawnRequest(ply)
-    if ply.dbgChar_nextRequest and CurTime() < ply.dbgChar_nextRequest then
-        ply:Notify('warning', 'Подождите перед повторной попыткой')
-        return
-    end
-    ply.dbgChar_nextRequest = CurTime() + 15
-
-    if ply.dbgChar_respawnPos then
-        ply:Notify('warning', 'Вы уже меняете персонажа')
-        return
-    end
-
-    if not ply:Alive() or ply:IsGhost() or ply:GetNetVar('wanted') or ply:isArrested() then
-        ply:Notify('warning', 'Сейчас нельзя сменить персонажа')
-        return
-    end
-
-    local jobCmd = ply:GetInfo('dbgChars.job') or 'citizen'
-
-    local jobTeam = tonumber(jobCmd) or 1
-    local job = RPExtraTeams[jobTeam]
-
-    if not job then
-        ply:Notify('warning', 'Профессия не найдена')
-        return
-    end
-
-    local limit = job.max == 0 or team.NumPlayers(job.team) < math.ceil(player.GetCount() * job.max)
-    if not limit then
-        ply:Notify('warning', 'Достигнут лимит профессии')
-        return
-    end
-
-    netstream.Start(ply, 'dbg-characters.updateState', true)
-
-    local pos = getRespawnPos(ply, 1000, 8000)
-    if pos then
-        enableCharRespawn(ply, pos)
-    else
-        enableCharRespawn(ply, getRespawnPos(ply))
-    end
-end
-
 local function removeTimer(ply)
     ply:ClearMarkers('change-char')
     ply.dbgChar_respawnPos = nil
@@ -450,7 +421,65 @@ hook.Add('PlayerDisconnected', 'dbg-char', removeTimer)
 
 netstream.Hook('dbg-characters.respawn', function(ply, state)
     if state then
-        respawnRequest(ply)
+        if ply.dbgChar_nextRequest and CurTime() < ply.dbgChar_nextRequest then
+            ply:Notify('warning', 'Подождите перед повторной попыткой')
+            return
+        end
+        ply.dbgChar_nextRequest = CurTime() + 15
+
+        if ply.dbgChar_respawnPos then
+            ply:Notify('warning', 'Вы уже меняете персонажа')
+            return
+        end
+
+        if not ply:Alive() or ply:IsGhost() or ply:GetNetVar('wanted') or ply:isArrested() then
+            ply:Notify('warning', 'Сейчас нельзя сменить персонажа')
+            return
+        end
+
+        ply:GetClientVar('dbgChars.job', function(jobCmd)
+            jobCmd = jobCmd or 'citizen'
+
+            local job, jobID
+            for _, v in ipairs(RPExtraTeams) do
+                if v.command == jobCmd then
+                    job = v
+                    jobID = v.team
+                    break
+                end
+            end
+
+            if not job then
+                jobCmd = 'citizen'
+                for _, v in ipairs(RPExtraTeams) do
+                    if v.command == 'citizen' then
+                        job = v
+                        jobID = v.team
+                        break
+                    end
+                end
+            end
+
+            if not job then
+                ply:Notify('warning', 'Профессия гражданин не найдена')
+                return
+            end
+
+            local limit = job.max == 0 or team.NumPlayers(job.team) < math.ceil(player.GetCount() * job.max)
+            if not limit then
+                ply:Notify('warning', 'Достигнут лимит профессии')
+                return
+            end
+
+            netstream.Start(ply, 'dbg-characters.updateState', true)
+
+            local pos = getRespawnPos(ply, 1000, 8000)
+            if pos then
+                enableCharRespawn(ply, pos)
+            else
+                enableCharRespawn(ply, getRespawnPos(ply))
+            end
+        end)
     else 
         removeTimer(ply)
         ply:Notify('warning', 'Смена персонажа отменена')
