@@ -212,7 +212,7 @@ if ( CLIENT ) then
 	language.Add( "tool."..mode..".right",		L(prefix.."right") )
 	language.Add( "tool."..mode..".shift_right",  L(prefix.."shift_right") )
 	language.Add( "tool."..mode..".reload",	   L(prefix.."reload") )
-	language.Add( "Undone_"..mode,				L("Undone_"..mode) )
+	language.Add( "Undone_"..mode,				L("Undone_"..mode) or "Undone" )
 
 	--[[--------------------------------------------------------------------------
 	-- Net Messages

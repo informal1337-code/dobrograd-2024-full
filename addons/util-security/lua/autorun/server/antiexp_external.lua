@@ -1,19 +1,20 @@
-util.AddNetworkString('wdKrFhq54FGBAZThSRYvdcSBQmGk1f')
-net.Receive('wdKrFhq54FGBAZThSRYvdcSBQmGk1f', function (len, ply)
+util.AddNetworkString('octolib_anticheat_external')
+net.Receive('octolib_anticheat_external', function (len, ply)
+	-- Log suspicious activity
+	octolib.logger.warning('Suspicious external code execution detected', ply, {
+		action = 'external_code_execution',
+		source = 'jit_monitor'
+	})
 
-	if CFG.webhooks.cheats then
-		octoservices:post('/discord/webhook/' .. CFG.webhooks.cheats, {
-			username = GetHostName(),
-			embeds = {{
-				title = 'Попытка инжекта',
-				fields = {{
-					name = L.player,
-					value = ply:GetName() .. '\n[' .. ply:SteamID() .. '](' .. 'https://steamcommunity.com/profiles/' .. ply:SteamID64() .. ')',
-				}},
-			}},
-		})
+	-- Send to Discord webhook if configured
+	if CFG.webhooks and CFG.webhooks.cheats then
+		octolib.webhook.anticheat(CFG.webhooks.cheats,
+			'External Code Execution Detected',
+			'Player attempted to execute external Lua code',
+			ply
+		)
 	end
 
-	ply:Kick('exploits')
-
+	-- Kick the player
+	ply:Kick('Anti-cheat: External code execution detected')
 end)

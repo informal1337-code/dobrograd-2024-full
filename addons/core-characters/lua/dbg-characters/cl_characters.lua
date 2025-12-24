@@ -9,17 +9,13 @@ octolib.vars.init('dbgChars.desc', '')
 function dbgChars.savePreset(preset, id)
     id = id or (#dbgChars.presets + 1)
     dbgChars.presets[id] = preset
-    
     netstream.Start('dbg-characters.savePresets', dbgChars.presets)
-    
     hook.Run('dbg-characters.presetsUpdated', dbgChars.presets)
 end
 
 function dbgChars.removePreset(id)
     table.remove(dbgChars.presets, id)
-    
     netstream.Start('dbg-characters.savePresets', dbgChars.presets)
-    
     hook.Run('dbg-characters.presetsUpdated', dbgChars.presets)
 end
 
@@ -32,7 +28,7 @@ netstream.Hook('dbg-characters.getPresets', function(presets)
     hook.Run('dbg-characters.presetsUpdated', dbgChars.presets)
 end)
 
-function dbgChars.fixConVars()
+function dbgChars.fixConVars() // жирное уебище
     local model = octolib.vars.get('dbgChars.model')
     local face = octolib.vars.get('dbgChars.face')
     local skin = octolib.vars.get('dbgChars.skin')

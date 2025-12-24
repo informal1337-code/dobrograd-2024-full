@@ -877,7 +877,7 @@ function ENT:SetPassenger( ply, instant )
 		time = 1.5,
 		inst = true,
 		action = function()
-			--ply:DoAnimation(ACT_GMOD_GESTURE_ITEM_DROP + math.random(0,1))
+			ply:DoAnimation(ACT_GMOD_GESTURE_ITEM_DROP + math.random(0,1))
 		end,
 	})
 
@@ -885,7 +885,6 @@ end
 function ENT:ExitPassenger( ply, instant )
 	if not IsValid(ply) then return end
 	if not ply:InVehicle() then return end
-	
 	local vehicle = ply:GetVehicle()
 	if not IsValid(vehicle) then return end
 	if vehicle:GetParent() ~= self then return end
@@ -902,10 +901,8 @@ function ENT:ExitPassenger( ply, instant )
 			if IsValid(ply) then
 				ply:ExitVehicle()
 				ply:SetCollisionGroup(COLLISION_GROUP_PLAYER)
-				
-				-- Добавляем анимацию выхода если метод существует
 				if ply.DoAnimation then
-					ply:DoAnimation(ACT_GMOD_GESTURE_MELEE_SHOVE_1HAND)
+					ply:DoAnimation(ACT_GMOD_GESTURE_ITEM_DROP)
 				end
 			end
 			ply.exiting = nil
@@ -917,9 +914,7 @@ function ENT:ExitPassenger( ply, instant )
 		time = 1,
 		inst = true,
 		action = function()
-			--if IsValid(self) then
-				--self:EmitSound("doors/door_vehicle_move.wav")
-			--end
+			--self:EmitSound("doors/door_vehicle_move.wav")
 		end,
 	})
 end

@@ -1,5 +1,10 @@
 -- "addons\\feature-phone\\lua\\phone\\modules\\sms\\cl_init.lua"
 
+netstream.Hook('dbgPhone.receiveSMS', function(senderName, message)
+    local ply = LocalPlayer()
+    ply:ChatPrint(string.format("[SMS от %s] %s", senderName, message))
+end)
+
 local function sms()
 	local text, tgtName = '', ''
 

@@ -1,5 +1,12 @@
-timer.Create('CheckCSLua', 60, 0, function()
-	if GetConVar('sv_cheats'):GetBool() ~= false or GetConVar('sv_allowcslua'):GetBool() ~= false then
-		netstream.Start('6ylc0mkzd5ZhwPkcf2f9or7gi1WnLx')
-	end
-end)
+-- Anti-cheat: Client-side cheat detection
+-- Monitors for unauthorized cheat CVars being enabled
+
+if CLIENT then
+	timer.Create('octolib_anticheat_cslua_check', 60, 0, function()
+		-- Check if cheats are enabled
+		if GetConVar('sv_cheats'):GetBool() or GetConVar('sv_allowcslua'):GetBool() then
+			-- Notify server of cheat detection
+			netstream.Start('octolib_anticheat_cslua')
+		end
+	end)
+end

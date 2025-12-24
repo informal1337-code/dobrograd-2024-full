@@ -95,23 +95,44 @@ function BraxBank.PlayerMoneyAsync(ply, handler)
 end
 
 function BraxBank.UpdateMoney(ply, amount, doNotNotify)
-
 	if isstring(ply) and not IsValid(player.GetBySteamID(ply)) then
 		MySQLite.query(string.format([[UPDATE dbg_atm SET money = %d WHERE steamID = %s]],
 			amount, MySQLite.SQLStr(ply)
 		))
+		//print("[DBG-ATM] UpdateMoney: Updated database for offline player")
 	else
 		if isstring(ply) then ply = player.GetBySteamID(ply) end
-		if not IsValid(ply) then return end
+		if not IsValid(ply) then 
+			//print("[DBG-ATM] UpdateMoney: Player is not valid")
+			return
+		end
 
-		local delta = amount - ply:GetLocalVar('BankMoney', 0)
+		local currentMoney = ply:GetLocalVar('BankMoney', 0)
+		local delta = amount - currentMoney
+		//была рекурсия
+		if currentMoney == amount then
+			//print("[DBG-ATM] UpdateMoney: No change needed for " .. ply:Nick())
+			return
+		end
+
+		--print(string.format("[DBG-ATM] UpdateMoney: %s, current: %d, new: %d, delta: %d", 
+			--ply:Nick(), currentMoney, amount, delta))
 		ply:SetLocalVar('BankMoney', amount)
-		BraxBank.SavePlayer(ply)
-		if not doNotNotify then notifyAboutBalanceUpdate(ply, delta) end
+
+		MySQLite.query(string.format([[UPDATE dbg_atm SET money = %d WHERE steamID = %s]],
+			amount, MySQLite.SQLStr(ply:SteamID())
+		), function()
+			//print("[DBG-ATM] UpdateMoney: Database updated for " .. ply:Nick())
+		end)
+
+		if not doNotNotify then 
+			//print("[DBG-ATM] UpdateMoney: Sending notification for " .. ply:Nick())
+			notifyAboutBalanceUpdate(ply, delta) 
+		else
+			//print("[DBG-ATM] UpdateMoney: Notification skipped for " .. ply:Nick())
+		end
 	end
-
 end
-
 function BraxBank.TakeAction(ply)
 
 	ply:addExploitAttempt()
@@ -123,16 +144,14 @@ hook.Add("PlayerFinishedLoading", "dbg-atm", BraxBank.InitPlayer)
 
 local startmoney = 300
 hook.Add('dbg-char.spawn', 'dbg-atm', function(ply)
-
 	if hook.Run('octoinv.overrideInventories') == false then return end
 
 	local money = BraxBank.PlayerMoney(ply)
 	if not ply:IsGhost() and ply.inv and not ply:canAfford(startmoney) and money >= startmoney then
-		BraxBank.UpdateMoney(ply, money - startmoney)
+		BraxBank.UpdateMoney(ply, money - startmoney, true) -- true = doNotNotify
 		ply:addMoney(startmoney)
 		ply:Notify('ooc', L.brax_atm_hint, DarkRP.formatMoney(startmoney), L.from_bank)
 	end
-
 end)
 
 --[[
@@ -150,26 +169,55 @@ net.Receive( "BraxAtmWithdraw", function( length, client )
 	local WithdrawValue = net.ReadInt(32)
 	local UserMoney = BraxBank.PlayerMoney(client)
 
+	client.ProcessingATM = true
 	local atm
 	for _,v in pairs(ents.FindByClass("brax_atm")) do
 		if IsValid(v) and v:GetClass() == "brax_atm" and v:GetPos():Distance(client:GetShootPos()) < 256 then atm = v end
 	end
-	if atmcheck == false then BraxBank.TakeAction(client) return end
-	if WithdrawValue <= 0 then BraxBank.TakeAction(client) return end
+
+	if not IsValid(atm) then 
+		--print("[DBG-ATM] Withdraw: No valid ATM found")
+		client.ProcessingATM = false
+		BraxBank.TakeAction(client)
+		return
+	end
+
+	if WithdrawValue <= 0 then 
+		--print("[DBG-ATM] Withdraw: Invalid amount: " .. WithdrawValue)
+		client.ProcessingATM = false
+		BraxBank.TakeAction(client)
+		return
+	end
 
 	if not client:BankHas(WithdrawValue) then
+		--print("[DBG-ATM] Withdraw: Player doesn't have enough in bank: " .. WithdrawValue)
+		client.ProcessingATM = false
 		BraxBankAtmReturnCode(atm, 2, client)
 		return
 	end
 
 	local NewVal = UserMoney - WithdrawValue
-	if NewVal < 0 then BraxBank.TakeAction(client) return end
+	if NewVal < 0 then 
+		--print("[DBG-ATM] Withdraw: New value negative: " .. NewVal)
+		client.ProcessingATM = false
+		BraxBank.TakeAction(client)
+		return
+	end
 
-	BraxBank.UpdateMoney(client, NewVal)
+	--print("[DBG-ATM] Withdraw successful: " .. client:Nick() .. " withdrew " .. WithdrawValue)
+
+	BraxBank.UpdateMoney(client, NewVal, true) -- true = doNotNotify
+
 	client:addMoney(WithdrawValue)
 	hook.Run('atm.withdraw', client, WithdrawValue)
-
 	BraxBankAtmReturnCode(atm, 3, client)
+
+	timer.Simple(1, function()
+		if IsValid(client) then
+			BraxBankAtmUpdate(client)
+			client.ProcessingATM = false
+		end
+	end)
 
 end)
 
@@ -180,26 +228,62 @@ net.Receive( "BraxAtmDeposit", function( length, client )
 	local DepositValue = net.ReadInt(32)
 	local UserMoney = BraxBank.PlayerMoney(client)
 
-	-- do some simple cheat checks
+	-- if client.ProcessingATM then
+	-- 	print("[DBG-ATM] Deposit: Already processing ATM transaction for " .. client:Nick())
+	-- 	return
+	-- end
+
+	client.ProcessingATM = true
+
 	local atm
 	for _,v in pairs(ents.FindByClass("brax_atm")) do
 		if IsValid(v) and v:GetClass() == "brax_atm" and v:GetPos():Distance(client:GetShootPos()) < 256 then atm = v end
 	end
-	if atmcheck == false then BraxBank.TakeAction(client) return end
-	if DepositValue <= 0 then BraxBank.TakeAction(client) return end
+
+	if not IsValid(atm) then 
+		//print("[DBG-ATM] Deposit: No valid ATM found")
+		client.ProcessingATM = false
+		BraxBank.TakeAction(client)
+		return
+	end
+
+	if DepositValue <= 0 then 
+		//print("[DBG-ATM] Deposit: Invalid amount: " .. DepositValue)
+		client.ProcessingATM = false
+		BraxBank.TakeAction(client)
+		return
+	end
 
 	if not client:canAfford(DepositValue) then
+		//print("[DBG-ATM] Deposit: Player can't afford: " .. DepositValue)
+		client.ProcessingATM = false
 		BraxBankAtmReturnCode(atm, 4, client)
 		return
 	end
 
 	local NewVal = UserMoney + DepositValue
-	if NewVal < 0 then BraxBank.TakeAction(client) return end
+	if NewVal < 0 then 
+		//print("[DBG-ATM] Deposit: New value negative: " .. NewVal)
+		client.ProcessingATM = false
+		BraxBank.TakeAction(client)
+		return
+	end
 
-	BraxBank.UpdateMoney(client, NewVal)
+	//print("[DBG-ATM] Deposit successful: " .. client:Nick() .. " deposited " .. DepositValue)
+
 	client:addMoney(-DepositValue)
+
+	BraxBank.UpdateMoney(client, NewVal, true) -- true = doNotNotify
+
 	hook.Run('atm.deposit', client, DepositValue)
 	BraxBankAtmReturnCode(atm, 5, client)
+	
+	timer.Simple(1, function()
+		if IsValid(client) then
+			BraxBankAtmUpdate(client)
+			client.ProcessingATM = false
+		end
+	end)
 
 end)
 

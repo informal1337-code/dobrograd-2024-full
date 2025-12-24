@@ -53,9 +53,9 @@ local function AddToParticleListTable(filename,isaddon,icon)
 
 	local filestr = file.Read(filename,"LUA")
 	if !filestr then MsgN("PARTICLE CONTROL ERROR: Particle list file \"" .. filename .. "\" doesn't exist or isn't a readable file! Something went wrong!") return end
-	local keyvalues = util.KeyValuesToTable( filestr, false, true )
+	local success, keyvalues = pcall(util.KeyValuesToTable, filestr, false, true)
 	local resulttable = { Info = {}, Particles = {} }
-	if !keyvalues or (table.Count(keyvalues) == 0) then MsgN("PARTICLE CONTROL ERROR: Particle list file \"" .. filename .. "\" isn't a valid keyvalue table and couldn't be read! Check the file and make sure you've formatted everything correctly!") return end
+	if !success or !keyvalues or (table.Count(keyvalues) == 0) then MsgN("PARTICLE CONTROL ERROR: Particle list file \"" .. filename .. "\" isn't a valid keyvalue table and couldn't be read! Check the file and make sure you've formatted everything correctly!") return end
 	if !keyvalues.Info then
 		//On Mac/Linux systems, the keyvalues-to-table function messes up and returns the keyname "Info" as something else, like "inf", so it's possible that the info subtable is
 		//still here, just under a different keyname. The info is the only thing in keyvalues that should be a table value, so we'll check for that:

@@ -1,7 +1,17 @@
+include('shared.lua')
+
+ENT.Spawnable			= true
+ENT.AdminSpawnable		= false
+ENT.RenderGroup 		= RENDERGROUP_BOTH
 
 function ENT:Draw()
-    self:DrawModel() -- Рисуем модель
-    render.SetBlend(0.3) -- Прозрачность
-    self:DrawLocalPos(SHAPE_SQUARE, Angle(), Vector(0, 0, 0), Color(0, 255, 0))
-    render.SetBlend(1.0)
+    self:DrawModel()
 end
+
+netstream.Hook("dbg.healpoint.start", function()
+    LocalPlayer():ChatPrint("Вы зашли в зону лечения. Ваше здоровье будет восстанавливаться.")
+end)
+
+netstream.Hook("dbg.healpoint.stop", function()
+    LocalPlayer():ChatPrint("[#] Лечение остановлено")
+end)

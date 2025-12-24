@@ -29,7 +29,7 @@ function work.start(ply, time, maxDist)
     ply:AddMarker {
         id = 'work2',
         txt = 'Убрать граффити',
-        pos = graffiti:GetPos(),        
+        pos = graffiti:GetPos(),
         col = Color(255,92,38),
         des = {'time', {time}},
         icon = 'octoteam/icons-16/paintcan.png',

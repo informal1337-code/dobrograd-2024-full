@@ -216,14 +216,19 @@ do
 
 		local function LoadENTLump( data, tab )
 			for s in string.gmatch( data, "%{.-%\n}" ) do
-				local t = util.KeyValuesToTable("t" .. s)
-				-- Convert a few things to make it easier
-					t.origin = util.StringToType(t.origin or "0 0 0","Vector")
-					t.angles = util.StringToType(t.angles or "0 0 0","Angle")
-					local c = util.StringToType(t.rendercolor or "255 255 255","Vector")
-					t.rendercolor = Color(c.x,c.y,c.z)
-					t.raw = s
-				table.insert(tab,t)
+				if s:find('"classname"') then
+					local success, t = pcall(util.KeyValuesToTable, "t" .. s)
+					if success and t and t.t then
+						t = t.t
+						-- Convert a few things to make it easier
+						t.origin = util.StringToType(t.origin or "0 0 0","Vector")
+						t.angles = util.StringToType(t.angles or "0 0 0","Angle")
+						local c = util.StringToType(t.rendercolor or "255 255 255","Vector")
+						t.rendercolor = Color(c.x,c.y,c.z)
+						t.raw = s
+						table.insert(tab,t)
+					end
+				end
 			end
 		end
 

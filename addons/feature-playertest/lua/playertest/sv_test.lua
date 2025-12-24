@@ -105,9 +105,9 @@ function test.saveAttempt(ply, questions, answers, total)
 				}
 			}
 
-			if CFG.webhooks.unban then
-				octoservices:post('/discord/webhook/' .. CFG.webhooks.unban, {
-					embeds = { embed },
+			if CFG.webhooks.admin then
+				octolib.webhook.send(CFG.webhooks.admin, {
+					embeds = {embed}
 				})
 			end
 

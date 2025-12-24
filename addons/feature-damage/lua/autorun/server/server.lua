@@ -214,7 +214,7 @@ end
 local function NotifyDamage(ply, hitgroup)
     local hitgroupName = HITGROUP_NAMES[hitgroup]
     if hitgroupName then
-        ply:Notify("hint", "Тебе попали в " .. hitgroupName)
+        octolib.notify.send(ply, "hint", "Тебе попали в " .. hitgroupName)
     end
 end
 
@@ -268,7 +268,7 @@ local function StartBleeding(ply)
         ply:dropDRPWeapon(activeWeapon)
     end
     
-    ply:Notify("warning", "Ты при смерти. Если тебе не окажут помощь, ты погибнешь")
+    octolib.notify.send(ply, "warning", "Ты при смерти. Если тебе не окажут помощь, ты погибнешь")
     ply.bleeding = true
     bleedingPlayers[#bleedingPlayers + 1] = ply:SteamID()
     
@@ -358,28 +358,28 @@ netstream.Hook("dbg-armor.unwear", function(ply)
     
     local armorData = ply.armorItem
     if not armorData then
-        ply:Notify("warning", "У тебя нет надетого бронежилета")
+        octolib.notify.send(ply, "warning", "У тебя нет надетого бронежилета")
         return
     end
-    
+
     if armorData.armor ~= ply:Armor() then
-        ply:Notify("warning", "Твой бронежилет поврежден")
+        octolib.notify.send(ply, "warning", "Твой бронежилет поврежден")
         return
     end
-    
+
     local inv = ply:GetInventory()
     local handContainer = inv and inv:GetContainer("_hand")
     if not handContainer then
-        ply:Notify("warning", "Освободи руки, чтобы туда можно было положить бронежилет")
+        octolib.notify.send(ply, "warning", "Освободи руки, чтобы туда можно было положить бронежилет")
         return
     end
-    
+
     if handContainer:AddItem("armor", armorData) >= 1 then
         ply:SetArmor(0)
         ply.armorItem = nil
         ply:SetLocalVar("armor", nil)
         ply:EmitSound("npc/combine_soldier/gear3.wav", 55)
     else
-        ply:Notify("warning", "В руках недостаточно места")
+        octolib.notify.send(ply, "warning", "В руках недостаточно места")
     end
 end)

@@ -1,5 +1,12 @@
 -- "addons\\feature-phone\\lua\\phone\\cl_init.lua"
 
+local PANEL = vgui.GetControlTable('DMenuOption')
+if PANEL then
+	function PANEL:SetTourAnchor(anchor)
+		self._tourAnchor = anchor
+	end
+end
+
 local actions = dbgPhone.actions
 if not actions then
 	actions = {}
@@ -62,8 +69,7 @@ local function addOption(menu, struct)
 	else
 		option = menu:AddOption(struct.title, function()
 			struct.callback()
-
-			if tourAnchor then
+			if octolib.tour and tourAnchor then
 				octolib.tour.trigger(tourAnchor)
 			end
 		end)

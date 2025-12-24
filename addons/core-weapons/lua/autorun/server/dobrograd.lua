@@ -246,7 +246,7 @@ hook.Add('PlayerSwitchWeapon', 'dbg.weaponGroups', function(ply, old, new)
 			inst = true,
 			action = function()
 				if ply.DoAnimation then
-					ply:DoAnimation(ACT_GMOD_GESTURE_MELEE_SHOVE_1HAND)
+					ply:DoAnimation(ACT_GMOD_GESTURE_ITEM_DROP)--
 				end
 				if not silent then
 					ply:EmitSound('npc/combine_soldier/gear' .. math.random(1, 2) .. '.wav', 30)

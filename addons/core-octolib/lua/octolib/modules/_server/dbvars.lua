@@ -72,17 +72,12 @@ hook.Add('PlayerInitialSpawn', 'octolib.dbvars', function(ply)
 			save(steamID, {})
 
 			-- TODO: put in a hook
-			if CFG.webhooks.cheats then
-				octoservices:post('/discord/webhook/' .. CFG.webhooks.cheats, {
-					username = GetHostName(),
-					embeds = {{
-						title = 'Первый вход на сервер',
-						fields = {{
-							name = L.player,
-							value = ply:Name() .. '\n[' .. ply:SteamID() .. '](' .. 'https://steamcommunity.com/profiles/' .. ply:SteamID64() .. ')',
-						}},
-					}},
-				})
+			if CFG.webhooks.main then
+				octolib.webhook.anticheat(CFG.webhooks.main,
+					'New Player First Join',
+					'Player joined the server for the first time',
+					ply
+				)
 			end
 		end
 		hook.Run('octolib.dbvars-loaded', ply)

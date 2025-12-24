@@ -14,16 +14,20 @@ do
 		filename = "WireModelPacks/"..filename
 		print("Loading from WireModelPacks/"..filename)
 		local f = file.Read(filename, "DATA")
-		if f then
+		if f and f ~= "" then
 			converted[#converted+1] = "-- Converted from "..filename
-			local packtbl = util.KeyValuesToTable(f)
-			for name,entry in pairs(packtbl) do
-				print(string.format("\tLoaded model %s => %s", name, entry.model))
-				local categorytable = string.Explode(",", entry.categories or "none") or { "none" }
-				for _,cat in pairs(categorytable) do
-					list.Set( "Wire_"..cat.."_Models", entry.model, true )
-					converted[#converted+1] = string.format('list.Set("Wire_%s_Models", "%s", true)', cat, entry.model)
+			local success, packtbl = pcall(util.KeyValuesToTable, f)
+			if success and packtbl then
+				for name,entry in pairs(packtbl) do
+					print(string.format("\tLoaded model %s => %s", name, entry.model))
+					local categorytable = string.Explode(",", entry.categories or "none") or { "none" }
+					for _,cat in pairs(categorytable) do
+						list.Set( "Wire_"..cat.."_Models", entry.model, true )
+						converted[#converted+1] = string.format('list.Set("Wire_%s_Models", "%s", true)', cat, entry.model)
+					end
 				end
+			else
+				print("Error parsing "..filename)
 			end
 			converted[#converted+1] = ""
 		else

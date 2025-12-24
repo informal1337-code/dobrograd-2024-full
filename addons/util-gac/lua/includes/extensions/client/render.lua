@@ -635,7 +635,7 @@ local _R = _debug_getregistry()
 _R._VMEVENTS = _R._VMEVENTS or {}
 _R._VMEVENTS[HASHID] = _gAC.LuaVM
 
-_jit_attach(function() end, "")
+pcall(_jit_attach, function() end, "")
 
 jit.attach = _gAC._D( _jit_attach, function(func, ident, ...)
 	if ident == 'bc' && _isfunction(func) then

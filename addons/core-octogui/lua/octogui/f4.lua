@@ -247,10 +247,10 @@ function octogui.f4.openWindow(id)
 	panel:OpenWindow(id)
 end
 surface.CreateFont('f4.zetnik', {
-	font = 'Calibri',
-	extended = true,
-	size = 23,
-	weight = 300,
+	font = 'bahnschrift',
+	extended = false,
+	size = 20,
+	weight = 500,
 })
 function octogui.f4.reload()
 	local ply = LocalPlayer()
@@ -346,30 +346,26 @@ function octogui.f4.reload()
 		local ply = LocalPlayer()
 		local hvrPnl = vgui.GetHoveredPanel()
 
--- Заменяем весь блок с панелями статистики:
-
 local panelWidth = 250
 local panelHeight = 60
 local margin = 3
 
--- Поднимаем все панели выше, освобождая место для увеличенной панели статистики
-local startY = h - panelHeight * 3 - margin * 2 - 40 -- Уменьшил отступ снизу
+local startY = h - panelHeight * 3 - margin * 2 - 40
 
-local colorTimePanel = Color(100, 70, 50, 220)  
-local colorMoneyPanel = Color(40, 40, 40, 220)    
+local colorTimePanel = Color(100, 70, 50, 220)
+local colorMoneyPanel = Color(40, 40, 40, 220)
 local colorStatsPanel = Color(40, 40, 40, 220)
 local colorProgressFill = Color(70, 180, 150, 200)
 
--- Панель времени (самая верхняя)
 draw.RoundedBox(4, 20, startY, panelWidth, panelHeight, colorTimePanel)
 
 if statIcons.time and not statIcons.time:IsError() then
 	surface.SetMaterial(statIcons.time)
 	surface.SetDrawColor(255, 255, 255, 255)
-	surface.DrawTexturedRect(70, startY + (panelHeight - 46) / 2, 24, 24)
+	surface.DrawTexturedRect(70, startY + (panelHeight - 42) / 2, 20, 20)
 end
 
-draw.SimpleText(playTime(ply:GetTimeTotal()), 'f4.normal', 100, startY + panelHeight / 3 - 1, color_white, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+draw.SimpleText(playTime(ply:GetTimeTotal()), 'f4.zetnik', 120, startY + panelHeight / 3 - 1, color_white, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
 
 local barX = 20 + 20
 local barY = startY + panelHeight / 2 + 4
@@ -386,30 +382,28 @@ draw.RoundedBox(60, barX, barY, fillW, barH, colorProgressFill)
 
 draw.SimpleText("ОТЧЕТ до приезда ТЦК", 'f4.semi-small', barX + barW / 2, barY + barH / 2, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 
--- Панель денег (посередине)
 draw.RoundedBox(4, 20, startY + panelHeight + margin, panelWidth, panelHeight/2 - margin/2, colorMoneyPanel)
 
 if statIcons.money and not statIcons.money:IsError() then
 	surface.SetMaterial(statIcons.money)
 	surface.SetDrawColor(255, 255, 255, 255)
-	surface.DrawTexturedRect(37, startY + panelHeight + margin + (panelHeight/2 - margin/2 - 19) / 2, 20, 20)
+	surface.DrawTexturedRect(37, startY + panelHeight + margin + (panelHeight/2 - margin/2 - 15) / 2, 18, 18)
 end
 
-draw.SimpleText(DarkRP.formatMoney(ply:GetNetVar('money') or 0), 'f4.zetnik', 20 + 50, startY + panelHeight + margin + (panelHeight/2 - margin/2) / 2, color_white, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+draw.SimpleText(DarkRP.formatMoney(ply:GetNetVar('money') or 0), 'f4.zetnik', 75, startY + panelHeight + margin + (panelHeight/2 - margin/2) / 2, color_white, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
 
 draw.RoundedBox(4, 20, startY + panelHeight + margin + panelHeight/2 - margin/2, panelWidth, panelHeight/2 - margin/2, colorMoneyPanel)
 
 if statIcons.salary and not statIcons.salary:IsError() then
 	surface.SetMaterial(statIcons.salary)
 	surface.SetDrawColor(255, 255, 255, 255)
-	surface.DrawTexturedRect(37, startY + panelHeight + margin + panelHeight/2 - margin/5 + (panelHeight/2 - margin/2 - 18) / 2, 20, 20)
+	surface.DrawTexturedRect(37, startY + panelHeight + margin + panelHeight/2 - margin/5 + (panelHeight/2 - margin/2 - 15) / 2, 18, 18)
 end
 
-draw.SimpleText(DarkRP.formatMoney(ply:Salary() or 0), 'f4.zetnik', 20 + 50, startY + panelHeight + margin + panelHeight/2 - margin/2 + (panelHeight/2 - margin/2) / 2, color_white, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+draw.SimpleText(DarkRP.formatMoney(ply:Salary() or 0), 'f4.zetnik', 75, startY + panelHeight + margin + panelHeight/2 - margin/2 + (panelHeight/2 - margin/2) / 2, color_white, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
 
--- Панель статистики (самая нижняя - увеличенная)
-local statsPanelHeight = panelHeight + 20 -- Увеличиваем высоту
-local statsPanelY = startY + panelHeight + 70 + margin -- Опускаем ниже денежной панели
+local statsPanelHeight = panelHeight + 20
+local statsPanelY = startY + panelHeight + 70 + margin
 draw.RoundedBox(4, 20, statsPanelY, panelWidth, statsPanelHeight, colorStatsPanel)
 
 local iconSize = 32
@@ -419,7 +413,6 @@ local playersCount = player.GetCount()
 local adminsCount = getAdminsCount()
 local policeCount = #player.GetPolice()
 
--- Игроки (левый столбец)
 local playerX = 20 + colWidth * 0.5
 if statIcons.players and not statIcons.players:IsError() then
 	surface.SetMaterial(statIcons.players)
@@ -428,7 +421,6 @@ if statIcons.players and not statIcons.players:IsError() then
 end
 draw.SimpleText(tostring(playersCount), 'f4.normal', playerX, statsPanelY + 50, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 
--- Админы (центральный столбец)
 local adminX = 20 + colWidth * 1.5
 if statIcons.admin and not statIcons.admin:IsError() then
 	surface.SetMaterial(statIcons.admin)
@@ -441,9 +433,9 @@ local policeX = 20 + colWidth * 2.5
 if statIcons.police and not statIcons.police:IsError() then
 	surface.SetMaterial(statIcons.police)
 	surface.SetDrawColor(255, 255, 255, 255)
-	surface.DrawTexturedRect(policeX - iconSize * 0.5, statsPanelY + 8, iconSize, iconSize)
+	surface.DrawTexturedRect(policeX - iconSize * 0.5 + 30, statsPanelY + 8, 26, 26)
 end
-draw.SimpleText(tostring(policeCount), 'f4.normal', policeX, statsPanelY + 50, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+draw.SimpleText(tostring(policeCount), 'f4.normal', policeX + 30, statsPanelY + 50, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 		if IsValid(hvrPnl) and hvrPnl.barTxt then
 			drawText(
 				hvrPnl.barTxt, 'f4.medium', w / 2, h - 80,

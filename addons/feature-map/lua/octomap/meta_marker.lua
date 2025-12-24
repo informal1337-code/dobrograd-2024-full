@@ -12,7 +12,7 @@ local defaults = {
 	icon = 'icon16/house.png',
 	iconOffset = {0, 0},
 	iconSize = 16,
-}--ss
+}
 
 local icons = {
 	layerUp = Material('octoteam/icons-16/bullet_up.png'),

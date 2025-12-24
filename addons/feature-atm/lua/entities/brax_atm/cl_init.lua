@@ -1,6 +1,5 @@
 ﻿include('shared.lua')
 
--- store temporary variables
 BraxATM = {}
 BraxATM.UserMoney = 0
 BraxATM.ReturnCode = 0
@@ -19,9 +18,16 @@ end )
 net.Receive( 'BraxAtmReturnCode', function( length, client )
 	local ent = net.ReadEntity()
 	BraxATM.ReturnCode = net.ReadInt(32)
+	
+	print("[DBG-ATM-CLIENT] Received return code: " .. BraxATM.ReturnCode)
+	
 	local sound = sounds[BraxATM.ReturnCode]
 	if sound then
 		ent:EmitSound(sound, 75)
+	end
+	//сука уроды ебучие
+	if BraxATM.ReturnCode == 3 or BraxATM.ReturnCode == 5 then
+		RunConsoleCommand('brax_atm_update')
 	end
 end )
 
@@ -110,8 +116,6 @@ local function WorldToScreen(vWorldPos,vPos,vScale,aRot)
 end
 
 function ENT:Initialize()
-
-	-- Reset all variables
 	self.cursor = {y=0,x=0,click=false}
 	self.Action = 0
 	self.InputValue = 0
@@ -318,8 +322,6 @@ function ENT:Draw()
 
 		end
 
-
-		-- Deposit start screen
 		-- PUT MONEY
 		if self.Action == 2 then
 			self:AddButton('#ATM_Deposit', self:ScreenRight()-150, self:ScreenBottom()-32, 150, 32,	self.cursor, function()
@@ -327,8 +329,6 @@ function ENT:Draw()
 				self:ATMDeposit(self.InputValue)
 			end, 'arrow_up')
 		end
-
-		-- Withdraw start screen
 		-- TAKE MONEY
 		if self.Action == 1 then
 			self:AddButton('#ATM_Withdraw', self:ScreenRight()-150, self:ScreenBottom()-32, 150, 32,	self.cursor, function()
@@ -338,31 +338,36 @@ function ENT:Draw()
 		end
 
 		-- End screen
-		if self.Action == 3 then
-			local ding, icon, msg
-			if BraxATM.ReturnCode == 1 then
-				-- Transaction pending
-				icon, msg = 'octoteam/icons/clock.png', 'Подождите...'
-			elseif BraxATM.ReturnCode == 2 or BraxATM.ReturnCode == 4 then
-				-- Transaction fail
-				ding, icon, msg = 'buttons/button8.wav', 'octoteam/icons/cross.png', '#ATM_Transaction_Failed'
-			else
-				-- Transaction success
-				ding, icon, msg = 'buttons/bell1.wav', 'octoteam/icons/check.png', '#ATM_Transaction_Success'
-			end
-			if ding and not self.Ding then
-				surface.PlaySound(ding)
-				self.Ding = true
-			end
-			surface.SetDrawColor(255, 255, 255)
-			surface.SetMaterial(Material(icon))
-			surface.DrawTexturedRect(-32, -72, 64, 64)
-			draw.SimpleText(msg, 'AtmFontInfoBold', 0, 25, color_black, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-
-			draw.SimpleText(language.GetPhrase(RC[BraxATM.ReturnCode] or ''), 'AtmFontInfo', 0, 45, Color(0, 0, 0, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-
-			--draw.SimpleText(language.GetPhrase('#ATM_Return_code')..' '..BraxATM.ReturnCode, 'AtmFontInfo', 0, 77, Color(0, 0, 0, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+	if self.Action == 3 then
+		local ding, icon, msg
+		if BraxATM.ReturnCode == 1 then
+			-- Transaction pending
+			icon, msg = 'octoteam/icons/clock.png', 'Подождите...'
+		elseif BraxATM.ReturnCode == 2 or BraxATM.ReturnCode == 4 then
+			-- Transaction fail
+			ding, icon, msg = 'buttons/button8.wav', 'octoteam/icons/cross.png', '#ATM_Transaction_Failed'
+		elseif BraxATM.ReturnCode == 3 or BraxATM.ReturnCode == 5 then
+			-- Transaction success
+			ding, icon, msg = 'buttons/bell1.wav', 'octoteam/icons/check.png', '#ATM_Transaction_Success'
+		else
+			-- Unknown status
+			icon, msg = 'octoteam/icons/exclamation.png', 'Неизвестная ошибка'
 		end
+
+		if ding and not self.Ding then
+			surface.PlaySound(ding)
+			self.Ding = true
+		end
+		surface.SetDrawColor(255, 255, 255)
+		surface.SetMaterial(Material(icon))
+		surface.DrawTexturedRect(-32, -72, 64, 64)
+		draw.SimpleText(msg, 'AtmFontInfoBold', 0, 25, color_black, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+
+		local statusMsg = language.GetPhrase(RC[BraxATM.ReturnCode] or '') or ''
+		if statusMsg ~= '' then
+			draw.SimpleText(statusMsg, 'AtmFontInfo', 0, 45, Color(0, 0, 0, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+		end
+	end
 
 		-- Home button
 		if self.Action > 0 then

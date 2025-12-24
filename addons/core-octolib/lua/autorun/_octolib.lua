@@ -40,6 +40,7 @@ octolib.shared('octolib/modules/path')
 octolib.shared('octolib/modules/include')
 
 octolib.include.files('/octolib/libraries')
+
 octolib.include.modules('/octolib/modules', {
 	'!path',
 	'!include',
@@ -48,23 +49,26 @@ octolib.include.modules('/octolib/modules', {
 	'build',
 	'netstream',
 	'cfg',
-	'lang',
 	'table',
 	'array',
 	'string',
 	'func',
+	'vars',
+	'bind',
+	'data-editor',
+	'notify',
+	'anim',
+	'lang',
 	'meta',
 	'pon',
 	'queue',
 	'config',
 	'api',
-	'vars',
 	'icons',
-	'data-editor',
 	'test-helper',
-	'bind',
 	'*',
 })
+
 octolib.include.server('/octolib/modules/_server')
 octolib.include.client('/octolib/modules/_client')
 octolib.include.client('/octolib/vgui')

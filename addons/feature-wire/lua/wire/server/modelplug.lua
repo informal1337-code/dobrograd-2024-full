@@ -10,7 +10,10 @@ function ModelPlug_Register(category)
 	    for _,filename in pairs(packs) do
 			--resource.AddFile("data/WireModelPacks/" .. filename)
 
-	        local packtbl = util.KeyValuesToTable(file.Read("WireModelPacks/" .. filename) or {})
+	        local data = file.Read("WireModelPacks/" .. filename) or ""
+	        if data == "" then continue end
+	        local success, packtbl = pcall(util.KeyValuesToTable, data)
+	        if not success or not packtbl then continue end
 
 	        for name,entry in pairs(packtbl) do
 				local categorytable = string.Explode(",", entry.categories or "none") or { "none" }

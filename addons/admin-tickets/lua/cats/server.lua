@@ -32,13 +32,6 @@ CFG.keys = {
 	unban = "",
 }
 
-CFG.webhooks = {
-	cats = "",
-	cheats = "",
-	error = "",
-	unbanstring = ""
-}
-
 cats.api = octolib.api({
 	url = 'https://octothorp.team/cats/api',
 	headers = { ['Authorization'] = CFG.keys.cats or nil},
@@ -149,9 +142,9 @@ cats.NotifyDiscord = octolib.func.debounceStart(function(self)
 		embed.color = 0xE5BE01
 	end
 
-	octoservices:post('/discord/webhook/' .. webhook, {
+	octolib.webhook.send(CFG.webhooks.cats, {
 		content = #notClaimed > 5 and CFG.adminMention or nil,
-		embeds = { embed },
+		embeds = {embed}
 	})
 
 	if not table.IsEmpty(admins) then

@@ -84,7 +84,7 @@ dbgPhone.registerAction('make_call', {
 			},
 		}, function(data)
 			if not data then return end
-			netstream.Start('chat', '/call ' .. data[1])
+			netstream.Start('dbgPhone.makeCall', data[1])
 		end)
 	end,
 })

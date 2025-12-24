@@ -23,6 +23,8 @@ CFG.useDist = 84
 CFG.useDistSqr = CFG.useDist * CFG.useDist
 CFG.radioChatDistance = 250
 
+CFG.octoservicesURL = "https://octothorp.team/api"
+
 octoservices = octoservices or {}
 octoservices.get = octoservices.get or {}
 ---------------------------------------------------------------------
@@ -41,7 +43,7 @@ hook.Add('octolib.eyeTraceFilter', 'dobrograd', function(ply, filter)
 	filter[#filter + 1] = ply:GetNetVar('dragging')
 
 	local job = ply:getJobTable()
-	if job and not job.seesGhosts then
+	if job and not job.seesGhosts and player.GetGhosts then
 		for _, ghost in ipairs(player.GetGhosts()) do
 			filter[#filter + 1] = ghost
 		end

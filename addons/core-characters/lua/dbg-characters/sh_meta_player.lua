@@ -10,3 +10,7 @@ Player.Nick = Player.Name
 function Player:IsPremium()
     return self:GetNetVar('os_dobro') == true
 end
+
+function Player:IsGhost()
+	return self:GetNetVar('Ghost', false)
+end

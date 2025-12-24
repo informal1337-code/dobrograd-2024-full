@@ -1,7 +1,3 @@
-util.AddNetworkString("dbgPhone.requestBlacklist")
-util.AddNetworkString("dbgPhone.openBlacklistMenu")
-util.AddNetworkString("dbgPhone.updateBlacklist")
-
 local function canUsePhone(ply)
     if not IsValid(ply) then return false end
     if ply:IsGhost() then return false end
@@ -14,18 +10,16 @@ local function canUsePhone(ply)
     if IsValid(trace.Entity) and trace.Entity:GetClass() == 'ent_dbg_phone' and not trace.Entity.off then
         return true
     end
-    
+
     return false
 end
 
-net.Receive("dbgPhone.requestBlacklist", function(len, ply)
+netstream.Hook('dbgPhone.requestBlacklist', function(ply, action)
     if not canUsePhone(ply) then
         ply:Notify("У вас нет телефона!")
         return
     end
-    
-    local action = net.ReadString()
-    
+
     if action == "add" then
         local players = {}
         for _, v in ipairs(player.GetAll()) do
@@ -34,31 +28,22 @@ net.Receive("dbgPhone.requestBlacklist", function(len, ply)
             end
         end
 
-        net.Start("dbgPhone.openBlacklistMenu")
-        net.WriteTable(players)
-        net.WriteString("add")
-        net.Send(ply)
-        
+        netstream.Start(ply, 'dbgPhone.openBlacklistMenu', players, "add")
+
     elseif action == "remove" then
         local blacklist = ply:GetPData("dbgPhone_blacklist", "[]")
         blacklist = util.JSONToTable(blacklist) or {}
-        
-        net.Start("dbgPhone.openBlacklistMenu")
-        net.WriteTable(blacklist)
-        net.WriteString("remove")
-        net.Send(ply)
+
+        netstream.Start(ply, 'dbgPhone.openBlacklistMenu', blacklist, "remove")
     end
 end)
 
-net.Receive("dbgPhone.updateBlacklist", function(len, ply)
+netstream.Hook('dbgPhone.updateBlacklist', function(ply, action, steamid)
     if not canUsePhone(ply) then return end
-    
-    local action = net.ReadString()
-    local steamid = net.ReadString()
-    
+
     local blacklist = ply:GetPData("dbgPhone_blacklist", "[]")
     blacklist = util.JSONToTable(blacklist) or {}
-    
+
     if action == "add" then
         local exists = false
         for _, v in ipairs(blacklist) do
@@ -67,13 +52,13 @@ net.Receive("dbgPhone.updateBlacklist", function(len, ply)
                 break
             end
         end
-        
+
         if not exists then
             table.insert(blacklist, steamid)
             ply:SetPData("dbgPhone_blacklist", util.TableToJSON(blacklist))
             ply:Notify("Номер добавлен в черный список")
         end
-        
+
     elseif action == "remove" then
         for i, v in ipairs(blacklist) do
             if v == steamid then

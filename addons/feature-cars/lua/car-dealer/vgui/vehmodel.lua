@@ -13,79 +13,70 @@ end
 
 function PANEL:SetVehicle(vehID, data)
 
-    -- Простая проверка кэша
-    if self.currentVehID == vehID and not data.forceRefresh then 
-        return 
-    end
-    self.currentVehID = vehID
+	data = data or {}
 
-    data = data or {}
-    local cdData = carDealer.vehicles[vehID]
-    if not cdData then return end
+	local cdData = carDealer.vehicles[vehID]
+	if not cdData then return end
 
-    local spData = list.Get('simfphys_vehicles')[cdData.simfphysID]
-    assert(spData ~= nil, 'Wrong simfphysID for ' .. vehID)
+	self.vehID = vehID
 
-    self.vehID = vehID
+	local spData = list.Get('simfphys_vehicles')[cdData.simfphysID]
+	assert(spData ~= nil, 'Wrong simfphysID for ' .. vehID)
 
-    self:Cleanup()
-    local default = cdData.default
+	self:Cleanup()
+	local default = cdData.default
 
-    self:SetModel(spData.Model)
-    local ent = self.Entity
-    ent:SetPos(-ent:OBBCenter() + (cdData.previewOffset or Vector()))
-    ent:SetAngles(Angle(0, cdData.SpawnAngleOffset or spData.SpawnAngleOffset or 0, 0))
-    local cols = default and default.col or defaultColors
-    self.Entity:SetProxyColors({ cols[1], cols[2], CFG.reflectionTint, cols[4] })
-    self.Entity:SetSkin(default and default.skin or 0)
-    
-    timer.Simple(0, function()
-        if not IsValid(self) or not IsValid(self.Entity) then return end
-        carDealer.attachWheels(self.Entity, vehID, data.data)
-    end)
-    
-    self:SetCamPos(self.camPos)
-    self.vRawCamPos = self.camPos
-    self:SetLookAng((-self.camPos):Angle())
-    self.tgtLookAngle = self.aLookAngle
-    self:SetFOV((cdData.customFOV or 30) * (self.fovMultiplier or 1))
+	self:SetModel(spData.Model)
+	local ent = self.Entity
+	ent:SetPos(-ent:OBBCenter() + (cdData.previewOffset or Vector()))
+	ent:SetAngles(Angle(0, cdData.SpawnAngleOffset or spData.SpawnAngleOffset or 0, 0))
+	local cols = default and default.col or defaultColors
+	self.Entity:SetProxyColors({ cols[1], cols[2], CFG.reflectionTint, cols[4] })
+	self.Entity:SetSkin(default and default.skin or 0)
+	carDealer.attachWheels(ent, vehID, data.data)
+	self:SetCamPos(self.camPos)
+	self.vRawCamPos = self.camPos
+	self:SetLookAng((-self.camPos):Angle())
+	self.tgtLookAngle = self.aLookAngle
+	self:SetFOV((cdData.customFOV or 30) * (self.fovMultiplier or 1))
 
-    for k, v in pairs(default and default.bg or {}) do
-        ent:SetBodygroup(k, v)
-    end
+	for k, v in pairs(default and default.bg or {}) do
+		ent:SetBodygroup(k, v)
+	end
 
-    local status = data.data
-    if status then
-        local ent = self.Entity
-        if status.col then
-            self.Entity:SetProxyColors({ status.col[1], status.col[2], CFG.reflectionTint, status.col[4] })
-        end
-        if status.skin then ent:SetSkin(status.skin) end
-        if status.bg then
-            for k, v in pairs(status.bg) do
-                ent:SetBodygroup(k, v)
-            end
-        end
+	local status = data.data
+	if status then
+		local ent = self.Entity
+		if status.col then
+			self.Entity:SetProxyColors({ status.col[1], status.col[2], CFG.reflectionTint, status.col[4] })
+		end
+		if status.skin then ent:SetSkin(status.skin) end
+		if status.bg then
+			for k, v in pairs(status.bg) do
+				ent:SetBodygroup(k, v)
+			end
+		end
 
-        if status.atts then
-            carDealer.attachAccessories(ent, status.atts)
-        end
-    end
-    local mats = status and status.mats or default and default.mats or {}
-    for k, v in pairs(mats) do
-        self.Entity:SetSubMaterial(k-1, v)
-    end
+		if status.atts then
+			carDealer.attachAccessories(ent, status.atts)
+		end
+	end
+	local mats = status and status.mats or default and default.mats or {}
+	for k, v in pairs(mats) do
+		self.Entity:SetSubMaterial(k-1, v)
+	end
 
-    self.viewOffset = cdData.previewOffset or self.viewOffset or Vector()
-    if self.camOffset then
-        local off = self.camOffset
-        self.vCamPos = self.vRawCamPos +
-            self.aLookAngle:Right() * off.x +
-            self.aLookAngle:Forward() * off.y +
-            self.aLookAngle:Up() * off.z
-    end
+	self.viewOffset = cdData.previewOffset or self.viewOffset or Vector()
+	if self.camOffset then
+		local off = self.camOffset
+		self.vCamPos = self.vRawCamPos +
+			self.aLookAngle:Right() * off.x +
+			self.aLookAngle:Forward() * off.y +
+			self.aLookAngle:Up() * off.z
+	end
 
 end
+
 function PANEL:FirstPersonControls()
 
 	if not self.canControl then return end

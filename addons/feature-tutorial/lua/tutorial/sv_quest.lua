@@ -36,9 +36,7 @@ function dbgTutorial.quest.next(ply)
     
     local tourId = dbgTutorial.quest.getTourForStage(tutorial.stage)
     if tourId then
-        net.Start('dbgTutorial.tours.start')
-        net.WriteString(tourId)
-        net.Send(ply)
+        dbgTutorial.tours.start(ply, tourId)
     end
     
     dbgTutorial.quest.saveProgress(ply)
@@ -176,5 +174,11 @@ end)
 hook.Add("PlayerDisconnected", "dbgTutorial.SaveOnDisconnect", function(ply)
     if IsValid(ply) and ply.dbgTutorial then
         dbgTutorial.quest.saveProgress(ply)
+    end
+end)
+
+concommand.Add("dbg_getTest", function(ply, cmd, args)
+    if IsValid(ply) then
+        dbgTutorial.quest.start(ply)
     end
 end)

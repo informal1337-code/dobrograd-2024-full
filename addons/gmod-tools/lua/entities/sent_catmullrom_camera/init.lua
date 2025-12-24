@@ -101,10 +101,12 @@ function ENT:LoadForMap(filename)
 	self:InitController()
 	
 	local data = file.Read("CatmullRomCameraTracks/" .. filename .. ".txt")
-	
+
 	if not data then return Error("Could not load filename track '" .. filename .. "' from disk! " .. tostring(self) .. " map controller will not work!!!\n") end
-	
-	data = util.KeyValuesToTable(data)
+
+	local success, parsed = pcall(util.KeyValuesToTable, data)
+	if not success or not parsed then return Error("Could not parse track data for '" .. filename .. "'! Invalid KeyValues format.\n") end
+	data = parsed
 	
 	for k, v in ipairs(data) do
 	end

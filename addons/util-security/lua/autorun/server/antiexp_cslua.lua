@@ -1,35 +1,72 @@
+-- Anti-cheat: Client-side script detection
+-- Monitors for unauthorized client script usage
+
 local bannedPlayers = {}
 
-local function BanPlayer(ply)
-    local steamID = ply:SteamID()
-    bannedPlayers[steamID] = true
+-- Load existing bans on startup
+if file.Exists('octolib_banned_players.json', 'DATA') then
+	local data = file.Read('octolib_banned_players.json', 'DATA')
+	bannedPlayers = util.JSONToTable(data) or {}
+end
 
-    file.Write("octolib_banned_players.txt", util.TableToJSON(bannedPlayers)) -- Сохраняем черный список
+local function SaveBanList()
+	file.Write('octolib_banned_players.json', util.TableToJSON(bannedPlayers, true))
+end
+
+local function BanPlayer(ply, reason)
+	local steamID = ply:SteamID()
+	local steamID64 = ply:SteamID64()
+	
+	bannedPlayers[steamID] = {
+		name = ply:GetName(),
+		steamid64 = steamID64,
+		reason = reason,
+		banned_at = os.time(),
+	}
+	
+	SaveBanList()
+	
+	-- Log ban
+	octolib.logger.warning('Player banned for cheating', ply, {
+		action = 'ban_applied',
+		reason = reason,
+		steamid64 = steamID64
+	})
 end
 
 hook.Add("PlayerConnect", "octolib.anticheat.banCheck", function(steamID)
-    if bannedPlayers[steamID] then
-        return "You are banned for cheating."
-    end
+	if bannedPlayers[steamID] then
+		local banInfo = bannedPlayers[steamID]
+		return string.format("You are banned for: %s\nBanned on: %s", 
+			banInfo.reason or "cheating", 
+			os.date('%Y-%m-%d %H:%M:%S', banInfo.banned_at or 0))
+	end
 end)
 
-netstream.Hook('6ylc0mkzd5ZhwPkcf2f9or7gi1WnLx', function(ply)
-    if GetConVar('sv_cheats'):GetBool() ~= false or GetConVar('sv_allowcslua'):GetBool() ~= false then return end
+netstream.Hook('octolib_anticheat_cslua', function(ply)
+	-- Don't trigger if server has cheats enabled (for debugging)
+	if GetConVar('sv_cheats'):GetBool() or GetConVar('sv_allowcslua'):GetBool() then 
+		return 
+	end
 
-    BanPlayer(ply) -- Автоматически баним игрока
+	local reason = "Unauthorized client-side script usage"
+	BanPlayer(ply, reason)
 
-    if CFG.webhooks.cheats then
-        octoservices:post('/discord/webhook/' .. CFG.webhooks.cheats, {
-            username = GetHostName(),
-            embeds = {{
-                title = 'Попытка использовать клиентские скрипты',
-                fields = {{
-                    name = L.player,
-                    value = ply:GetName() .. '\n[' .. ply:SteamID() .. '](' .. 'https://steamcommunity.com/profiles/' .. ply:SteamID64() .. ')',
-                }},
-            }},
-        })
-    end
+	-- Send detailed Discord notification
+	if CFG.webhooks and CFG.webhooks.cheats then
+		octolib.webhook.anticheat(CFG.webhooks.cheats,
+			'Client-Side Cheat Detected',
+			'Player was caught using unauthorized client scripts',
+			ply,
+			{{
+				name = 'Detection Type',
+				value = 'Client-side Lua execution',
+			}, {
+				name = 'Action',
+				value = 'Permanent ban applied',
+			}}
+		)
+	end
 
-    ply:Kick('exploits')
+	ply:Kick('Anti-cheat: Unauthorized client script usage detected')
 end)

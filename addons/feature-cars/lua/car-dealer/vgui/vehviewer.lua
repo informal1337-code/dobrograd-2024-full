@@ -21,29 +21,7 @@ surface.CreateFont('car-dealer.view.subtitle-plate', {
 	antialias = true,
 	extended = true,
 })
-local trunkCache = {}
-local function getTrunkSize(simfphysID, ent)
-    local cacheKey = simfphysID .. '_' .. (ent and ent:EntIndex() or 0)
-    if trunkCache[cacheKey] then return trunkCache[cacheKey] end
-    
-    local spData = list.Get('simfphys_vehicles')[simfphysID]
-    if not spData then return end
 
-    local trunkData = spData.Members.Trunk
-    if not trunkData then return end
-
-    for i = 2, #trunkData do
-        if not istable(trunkData[i]) then break end
-        local volume, bgID, bgVal = unpack(trunkData[i])
-        if ent:GetBodygroup(bgID) == bgVal then
-            trunkCache[cacheKey] = volume
-            return volume
-        end
-    end
-
-    trunkCache[cacheKey] = trunkData[1]
-    return trunkData[1]
-end
 local function getTrunkSize(simfphysID, ent)
 	local spData = list.Get('simfphys_vehicles')[simfphysID]
 	if not spData then return end

@@ -90,15 +90,10 @@ hook.Add('octolib.ipInfo', 'octobans', function(ply, info)
 	end
 
 	if CFG.webhooks.cheats and info.countryCode and not noReport[info.countryCode] then
-		octoservices:post('/discord/webhook/' .. CFG.webhooks.cheats, {
-			username = GetHostName(),
-			embeds = {{
-				title = 'Подключение из ' .. (info.country or info.countryCode),
-				fields = {{
-					name = L.player,
-					value = ply:GetName() .. '\n[' .. ply:SteamID() .. '](' .. 'https://steamcommunity.com/profiles/' .. ply:SteamID64() .. ')',
-				}},
-			}},
-		})
+		octolib.webhook.anticheat(CFG.webhooks.cheats,
+			'Connection from ' .. (info.country or info.countryCode),
+			'Player connected from monitored country',
+			ply
+		)
 	end
 end)

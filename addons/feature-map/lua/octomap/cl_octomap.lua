@@ -9,7 +9,7 @@ File Path:   addons/feature-map/lua/octomap/cl_octomap.lua
 /____/\__/\____/_/\___/_/ /_/  /_.___/\__, /  /_/ /_/  /_/\___/_/ /_/\__,_/_/\__, /____/____/\__/\___/\__,_/_/\___/_/     
                                      /____/                                 /____/_____/                                  
 --]]
---sss
+
 octomap.materials = octomap.materials or {}
 octomap.materials.map = Material('octoteam/icons/clock.png')
 octomap.materials.streets = nil

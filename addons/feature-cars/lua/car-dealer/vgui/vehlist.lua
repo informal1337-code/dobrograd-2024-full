@@ -153,38 +153,34 @@ end
 
 local scrollAreaSize = 40
 function PANEL:Think()
-    local scr = self.activeScroller
-    if not IsValid(scr) then return end
 
-    local ct = CurTime()
-    if self.nextScrollUpdate and ct < self.nextScrollUpdate then return end
-    self.nextScrollUpdate = ct + 0.033 -- 30 FPS
+	local scr = self.activeScroller
+	if not IsValid(scr) then return end
 
-    local cx, cy = self:LocalCursorPos()
-    if octolib.math.inRange(cy, 0, self:GetTall()) then
-        local w = self:GetWide()
-        local updated = false
-        
-        if octolib.math.inRange(cx, 0, scrollAreaSize) then
-            local x, y = scr:GetPos()
-            local newX = math.Clamp(x + math.ceil(FrameTime() * 250), w - scr:GetWide() - 10, 0)
-            if newX > x then
-                scr:SetPos(newX, y)
-                updated = true
-            end
-        elseif octolib.math.inRange(cx, w - scrollAreaSize, w) then
-            local x, y = scr:GetPos()
-            local newX = math.Clamp(x - math.ceil(FrameTime() * 250), w - scr:GetWide() - 10, 0)
-            if newX < x then
-                scr:SetPos(newX, y)
-                updated = true
-            end
-        end
+	local cx, cy = self:LocalCursorPos()
+	if octolib.math.inRange(cy, 0, self:GetTall()) then
+		local w, updated = self:GetWide(), false
+		if octolib.math.inRange(cx, 0, scrollAreaSize) then
+			local x, y = scr:GetPos()
+			local newX = math.Clamp(x + math.ceil(FrameTime() * 250), w - scr:GetWide() - 10, 0)
+			if newX > x then
+				scr:SetPos(newX, y)
+				updated = true
+			end
+		elseif octolib.math.inRange(cx, w - scrollAreaSize, w) then
+			local x, y = scr:GetPos()
+			local newX = math.Clamp(x - math.ceil(FrameTime() * 250), w - scr:GetWide() - 10, 0)
+			if newX < x then
+				scr:SetPos(newX, y)
+				updated = true
+			end
+		end
 
-        if updated then
-            self:UpdateCamPositions()
-        end
-    end
+		if updated then
+			self:UpdateCamPositions()
+		end
+	end
+
 end
 
 function PANEL:CloseTab(tab, removePnl)

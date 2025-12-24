@@ -1,8 +1,5 @@
-dbgChars.ghosts.DeathRagdolls = dbgChars.ghosts.DeathRagdolls or {}
 local PM = FindMetaTable('Player')
 local EM = FindMetaTable('Entity')
-local maxPerPlayer = dbgChars.ghosts.config.ragdollsPerPlayer
-local maxPerServer = dbgChars.ghosts.config.ragdollsPerServer
 
 local baseTime = 10 * 60
 local minTime = 5 * 60
@@ -19,6 +16,7 @@ function dbgChars.ghosts.triggerDeath(ply)
 	local time = math.max(hook.Run('dbg-ghosts.overrideTime', ply) or dbgChars.ghosts.getSpawnTime(ply), 10)
 	ply:SetNetVar('_SpawnTime', CurTime() + time)
 	ply:SetNetVar('_GhostTime', CurTime() + math.min(time, dbgChars.ghosts.config.ghostTime))
+	ply:SetNetVar('_TimeToGhost', CurTime())
 	ply:SetDBVar('ghostTime', time)
 end
 
@@ -38,11 +36,6 @@ function PM:SetGhost(val)
 	end
 end
 
--- Эта функция теперь в shared.lua, можно удалить отсюда
--- function player.GetGhosts()
--- 	return table.GetKeys(curGhosts)
--- end
-
 hook.Add('GetPlayerChatColor', 'ghosts-chatcolor', function(ply, txt)
 	if ply:IsGhost() or not ply:Alive() then
 		return octochat.textColors.ooc
@@ -50,17 +43,9 @@ hook.Add('GetPlayerChatColor', 'ghosts-chatcolor', function(ply, txt)
 end)
 
 hook.Add('PlayerCanSeePlayersChat', 'chelog-death', function(txt, t, listener, talker)
-
 	if talker:IsGhost() and not listener:IsGhost() and listener:Team() ~= TEAM_ADMIN then
 		return false
 	end
-
-end)
-
-hook.Add('PlayerInitialSpawn', 'SendCorpsesColorsOnConnected', function(ply)
-	timer.Simple(5, function()
-		netstream.Start(ply, 'CorpsesCreated', dbgChars.ghosts.DeathRagdolls)
-	end)
 end)
 
 local protectedNVars = { {'name', 'seesName'}, {'attacker'}, {'bullet', 'seesCaliber'}, {'weapon', 'seesCaliber'}, {'time', 'seesTime'} }
@@ -72,78 +57,26 @@ for _, v in ipairs(protectedNVars) do
 	})
 end
 
-local deathCauses = L.deathCauses
+local deathCauses = L.deathCauses or {
+	unknown = {'неизвестно'},
+	bullet = {'пуля'},
+	fall = {'падение'},
+	vehicle = {'автомобиль'},
+	prop = {'объект'},
+	explosion = {'взрыв'},
+	fire = {'огонь'},
+	drown = {'утопление'},
+	acid = {'кислота'},
+	poison = {'яд'},
+	radiation = {'радиация'},
+}
 function PM:CreateRagdoll(attacker, dmg)
-
-	if not attacker then
-		attacker = dmg:GetAttacker()
+	if not self:SetRagdollState(true, dbgChars.ghosts.config.nearDeathTime) then
+		return
 	end
 
-	-- remove old player ragdolls
-	if not self.DeathRagdolls then self.DeathRagdolls = {} end
-	local numPlyR = 1
-	for k,rag in pairs(self.DeathRagdolls) do
-		if IsValid(rag) then
-			numPlyR = numPlyR + 1
-		else
-			self.DeathRagdolls[k] = nil
-		end
-	end
-	if maxPerPlayer >= 0 and numPlyR > maxPerPlayer then
-		for i = 0,numPlyR do
-			if numPlyR > maxPerPlayer then
-				self.DeathRagdolls[1]:Remove()
-				table.remove(self.DeathRagdolls, 1)
-				numPlyR = numPlyR - 1
-			else
-				break
-			end
-		end
-	end
-
-	-- remove old server ragdolls
-	local c2 = 1
-	for k,rag in pairs(dbgChars.ghosts.DeathRagdolls) do
-		if IsValid(rag) then
-			c2 = c2 + 1
-		else
-			dbgChars.ghosts.DeathRagdolls[k] = nil
-		end
-	end
-	if maxPerServer >= 0 and c2 > maxPerServer then
-		for i = 0,c2 do
-			if c2 > maxPerServer then
-				if IsValid(dbgChars.ghosts.DeathRagdolls[1]) then
-					dbgChars.ghosts.DeathRagdolls[1]:Remove()
-				end
-				table.remove(dbgChars.ghosts.DeathRagdolls,1)
-				c2 = c2 - 1
-			else
-				break
-			end
-		end
-	end
-
-	local Data = duplicator.CopyEntTable(self)
-	local subMats = {}
-	for i = 0, #self:GetMaterials() - 1 do
-		subMats[i] = self:GetSubMaterial(i)
-	end
-
-	local destroyIn = math.max(dbgChars.ghosts.getSpawnTime(self), dbgChars.ghosts.config.minCorpseTime)
-	local ent = ents.Create('prop_ragdoll')
-		duplicator.DoGeneric(ent, Data)
-	ent:Spawn()
-	ent:SetCollisionGroup(COLLISION_GROUP_WEAPON)
-	for id, mat in pairs(subMats) do
-		ent:SetSubMaterial(id, mat)
-	end
-	ent:Fire('kill', '', destroyIn)
-	if ent.SetPlayerColor then
-		ent:SetPlayerColor(self:GetPlayerColor())
-	end
-	ent:SetNetVar('RagdollOwner', self)
-	ent.ragdollSID = self:SteamID()
+	local ragdoll = self:GetRagdollEntity()
+	if not IsValid(ragdoll) then return end
 
 	local cause, weapon = table.Random(deathCauses.unknown)
 	for k, v in pairs(deathCauses) do
@@ -153,35 +86,33 @@ function PM:CreateRagdoll(attacker, dmg)
 		end
 	end
 
-	ent:SetNetVar('dbgLook', {
+	ragdoll:SetNetVar('dbgLook', {
 		name = '',
 		desc = 'corpseDesc',
 		descRender = true,
 		time = 8,
 	})
 
-	ent:SetNetVar('Corpse.name', self:Name())
-	ent:SetNetVar('Corpse.attacker', self.lastAttacker or L.unknown)
-	ent:SetNetVar('Corpse.bullet', dmg:IsDamageType(DMG_BULLET))
-	ent:SetNetVar('Corpse.cause', cause)
-	ent:SetNetVar('Corpse.weapon', weapon)
-	ent:SetNetVar('Corpse.time', CWI.TimeToString())
+	ragdoll:SetNetVar('Corpse.name', self:Name())
+	ragdoll:SetNetVar('Corpse.attacker', self.lastAttacker or L.unknown)
+	ragdoll:SetNetVar('Corpse.bullet', dmg:IsDamageType(DMG_BULLET))
+	ragdoll:SetNetVar('Corpse.cause', cause)
+	ragdoll:SetNetVar('Corpse.weapon', weapon)
+	ragdoll:SetNetVar('Corpse.time', CWI.TimeToString())
+	if IsValid(attacker) and attacker:IsPlayer() and attacker ~= self then
+		ragdoll:SetNetVar('Corpse.killer', attacker)
+		ragdoll:SetNetVar('Corpse.wasDangerous', self:WasDangerousAtDeath())
+	end
 
-	-- apply force to hit bone
 	local hitPos = dmg:GetDamagePosition()
 	local force = dmg:GetDamageForce()
-	local vel = self.lastVelocity or self:GetVelocity()
-	local physNum = ent:GetPhysicsObjectCount()
+	local physNum = ragdoll:GetPhysicsObjectCount()
 	local minDist, hitBone = 1000000
 	for id = 0, physNum - 1 do
-		local phys = ent:GetPhysicsObjectNum(id)
+		local phys = ragdoll:GetPhysicsObjectNum(id)
 		if IsValid(phys) then
-			local bone = ent:TranslatePhysBoneToBone(id)
+			local bone = ragdoll:TranslatePhysBoneToBone(id)
 			local pos, ang = self:GetBonePosition(bone)
-			phys:SetPos(pos)
-			phys:SetAngles(ang)
-			phys:AddVelocity(vel)
-
 			local testDist = hitPos:DistToSqr(pos)
 			if testDist < minDist then
 				hitBone = phys
@@ -193,20 +124,9 @@ function PM:CreateRagdoll(attacker, dmg)
 	if hitBone then
 		hitBone:ApplyForceOffset(force / 2, hitPos)
 	end
-
-	-- finish up
-	ent:SetNetVar('DeathTime', CurTime())
-	self:SetNetVar('DeathRagdoll', ent)
-	timer.Simple(0, function()
-		if not IsValid(self) or not IsValid(ent) then return end
-		self:SetNetVar('DeathRagdoll')
-		self:SetNetVar('DeathRagdoll', ent)
-	end)
+	self:SetNetVar('DeathRagdoll', ragdoll)
 	self:SetGhost(true)
 	self:SetClothes(nil)
-	table.insert(self.DeathRagdolls, ent)
-	table.insert(dbgChars.ghosts.DeathRagdolls, ent)
-
 end
 
 hook.Add('PlayerShouldTakeDamage', 'dbg-death', function(ply)
@@ -258,23 +178,19 @@ hook.Add('dbg-test.complete', 'dbg-ghost.checkGhost', check)
 
 local function death(ply)
 	ply:SetGhost(true)
-
 	dbgChars.ghosts.triggerDeath(ply)
 	ply:SetLocalVar('Energy', 100)
 	ply.died = true
 	if ply.UpdateCharState then ply:UpdateCharState() end
-
 	if ply:isArrested() then ply:unArrest() end
 end
 hook.Add('PlayerDeath', 'Ghosts', death)
 
 local function silentDeath(ply)
 	ply:SetGhost(true)
-
 	dbgChars.ghosts.triggerDeath(ply)
 	ply:SetLocalVar('Energy', 100)
 	if ply.UpdateCharState then ply:UpdateCharState() end
-
 	if ply:isArrested() then ply:unArrest() end
 end
 hook.Add('PlayerSilentDeath', 'Ghosts', silentDeath)
@@ -289,21 +205,20 @@ hook.Add('PlayerSwitchFlashlight', 'GhostsCannotUseFlashlights', flashlight)
 hook.Add('PlayerSpawn', 'GhostSpawn', function(ply)
 
 	if ply:GetNetVar('Ghost') and (not ply:GetNetVar('launcherActivated') or ply:GetNetVar('_SpawnTime') > CurTime()) then
-		local function reset(ply)
+		local function reset(ply1)
 			if not IsValid(ply) then return end
 
-			ply:StripWeapons()
-			ply:Give('dbg_hands')
-			ply:GodEnable()
+			ply1:StripWeapons()
+			ply1:Give('dbg_hands')
+			ply1:GodEnable()
 
-			-- i know it's done on death, but shit happens
-			ply:ImportInventory(octoinv.defaultInventory)
+			// i know it's done on death, but shit happens
+			ply1:ImportInventory(octoinv.defaultInventory)
 		end
 
 		timer.Simple(0, reset)
-		timer.Simple(5, reset) -- dunno, it just happens
+		timer.Simple(5, reset)
 
-		-- make players look like ghosts
 		ply:SetColor(Color(255,255,255, 30))
 		ply:SetRenderMode(RENDERMODE_TRANSALPHA)
 		ply:SetCustomCollisionCheck(true)
@@ -326,12 +241,8 @@ hook.Add('PlayerSpawn', 'GhostSpawn', function(ply)
 
 end)
 
---
--- OTHER
---
-
 function FindSuitablePosition(pos, ent, dist, filtr)
-	-- NOTE: ply size: (32, 32, 72)
+	// ply size: (32, 32, 72)
 	local function checkPos(pos)
 		local trace = { start = pos, endpos = pos, filter = filtr }
 		local tr = util.TraceEntity(trace, ent)
@@ -339,27 +250,19 @@ function FindSuitablePosition(pos, ent, dist, filtr)
 		return not tr.Hit
 	end
 
-	-- check initial position
 	if checkPos(pos) then return pos end
 
-	-- find a place around
 	local testpos
 	for i = 0, 300, 60 do
 		testpos = pos + Angle(0, i, 0):Forward() * dist.around
 		if checkPos(testpos) then return testpos end
 	end
 
-	-- check a place above
 	testpos = pos + Vector(0, 0, dist.above)
 	if checkPos(pos + Vector(0, 0, dist.above)) then return testpos end
 
-	-- if we haven't found any place
 	return false
 end
-
---
--- SOME GHOST HOOKS
---
 
 local function PlayerThink()
 	for ply, _ in pairs(curGhosts) do
@@ -373,7 +276,6 @@ local function PlayerThink()
 
 			ply:GodDisable()
 
-			-- undo ghost look
 			ply:SetColor(Color(255, 255, 255, 255))
 			ply:SetRenderMode(RENDERMODE_NORMAL)
 			ply:SetCustomCollisionCheck(false)
@@ -396,14 +298,12 @@ local function updateGMFuncs()
 			ply:Spawn()
 		end
 
-		-- disable spawning
 		return false
 	end
 end
 hook.Add('darkrp.loadModules', 'dbg-ghosts', updateGMFuncs)
 updateGMFuncs()
 
--- people can't hear ghosts
 local function handleChat(listener, talker)
 	if talker:IsGhost() and not listener:IsGhost() and listener:Team() ~= TEAM_ADMIN then
 		return false
@@ -429,7 +329,7 @@ local function noHandcuff(ply, victim)
 end
 hook.Add('CuffsCanHandcuff', 'noHandcuff', noHandcuff)
 
--- darkrp hooks
+//darkrp hooks
 local function dont(ply)
 	if IsValid(ply) and ply:GetNetVar('Ghost') then
 		ply:Notify('warning', L.dead_cant_do_this)
@@ -511,3 +411,110 @@ local function cantChatCommand(ply, cmd)
 end
 
 hook.Add('octochat.canExecute', 'ghosts-cantchatcommands', cantChatCommand)
+
+local nearDeathPlayers = {}
+
+function PM:GetRagdollTimeLeft()
+	local ragdoll = self:GetRagdollEntity()
+	if not IsValid(ragdoll) then return 0 end
+	local deathTime = ragdoll:GetNetVar('DeathTime', CurTime())
+	local endTime = deathTime + dbgChars.ghosts.config.nearDeathTime
+	return math.max(0, endTime - CurTime())
+end
+
+function PM:GetRagdollEndsAt()
+	local ragdoll = self:GetRagdollEntity()
+	if not IsValid(ragdoll) then return CurTime() end
+	local deathTime = ragdoll:GetNetVar('DeathTime', CurTime())
+	return deathTime + dbgChars.ghosts.config.nearDeathTime
+end
+
+function PM:GetRagdollDuration()
+	return dbgChars.ghosts.config.nearDeathTime
+end
+
+local function checkNearDeath()
+	for ply, _ in pairs(nearDeathPlayers) do
+		if not IsValid(ply) or ply:Alive() then
+			nearDeathPlayers[ply] = nil
+			ply:SetNetVar('nearDeath', false)
+			continue
+		end
+		local timeLeft = ply:GetRagdollTimeLeft()
+		if timeLeft <= 0 then
+			local ragdoll = ply:GetRagdollEntity()
+			if IsValid(ragdoll) then
+				local killer = ragdoll:GetNetVar('Corpse.killer')
+				if IsValid(killer) and killer ~= ply then
+					local wasDangerous = ragdoll:GetNetVar('Corpse.wasDangerous', false)
+					local job = killer:getJobTable()
+					if not job.noKarmaDamagePenalty or not wasDangerous then
+						killer:AddKarma(-5, L.karma_kill)
+					end
+				end
+			end
+
+			ply:SetNetVar('nearDeath', false)
+			nearDeathPlayers[ply] = nil
+			ply:CreateRagdoll(nil, DamageInfo())
+		end
+	end
+end
+timer.Create('dbgChars.ghosts.nearDeathCheck', 1, 0, checkNearDeath)
+
+local function startNearDeath(ply)
+	if ply:GetNetVar('Ghost') or ply:Alive() then return end
+	nearDeathPlayers[ply] = true
+	ply:SetNetVar('nearDeath', true)
+	ply:SetNetVar('reviveTime', nil)
+end
+
+local function stopNearDeath(ply)
+	nearDeathPlayers[ply] = nil
+	ply:SetNetVar('nearDeath', false)
+	ply:SetNetVar('reviveTime', nil)
+end
+
+hook.Add('PlayerSilentDeath', 'dbgChars.ghosts.nearDeath', function(ply)
+	timer.Simple(0.1, function()
+		if IsValid(ply) and not ply:Alive() and not ply:GetNetVar('Ghost') then
+			startNearDeath(ply)
+		end
+	end)
+end)
+
+local function tryRevive(ply, reviver)
+	if not nearDeathPlayers[ply] then return false end
+
+	ply:SetNetVar('reviveTime', CurTime() + dbgChars.ghosts.config.reviveTime)
+
+	timer.Simple(dbgChars.ghosts.config.reviveTime, function()
+		if not IsValid(ply) or not nearDeathPlayers[ply] then return end
+
+		ply:SetNetVar('reviveTime', nil)
+		stopNearDeath(ply)
+		ply:Spawn()
+
+		//if IsValid(reviver) then
+			//приколюхи для того кто воскресит
+		//end
+	end)
+
+	return true
+end
+
+netstream.Hook('dbgChars.ghosts.tryRevive', function(ply, target)
+	if not IsValid(target) or not nearDeathPlayers[target] then return end
+
+	local dist = ply:GetPos():Distance(target:GetPos())
+	if dist > 150 then return end
+
+	tryRevive(target, ply)
+end)
+
+netstream.Hook('dbgChars.giveUp', function(ply)
+	if not nearDeathPlayers[ply] then return end
+
+	stopNearDeath(ply)
+	ply:CreateRagdoll(nil, DamageInfo())
+end)

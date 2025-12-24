@@ -5,7 +5,7 @@ ENT.PrintName = "ATM Machine"
 ENT.Author = "Braxen"
 ENT.Contact = ""
 ENT.Purpose = "very nice"
-ENT.Instructions = "yes." 
+ENT.Instructions = "yes."
 ENT.Category = "BraxnetRP"
 
 ENT.Spawnable			= true

@@ -975,6 +975,47 @@ concommand.Add('octoinv_give', function()
 		l2:SetText(resultText:format(itemData(item, 'volume') * amount, itemData(item, 'mass') * amount))
 	end
 
+	-- SteamID give section
+	local givePan = f:Add 'DPanel'
+	givePan:Dock(BOTTOM)
+	givePan:DockMargin(0,5,0,0)
+	givePan:DockPadding(5,5,5,5)
+	givePan:SetTall(50)
+	givePan:SetPaintBackground(true)
+
+	local steamIDEntry = givePan:Add 'DTextEntry'
+	steamIDEntry:Dock(LEFT)
+	steamIDEntry:SetWide(150)
+	steamIDEntry:SetPlaceholderText('SteamID')
+
+	local giveInvBtn = givePan:Add 'DButton'
+	giveInvBtn:Dock(LEFT)
+	giveInvBtn:DockMargin(5,0,0,0)
+	giveInvBtn:SetWide(100)
+	giveInvBtn:SetText('В инвентарь')
+	giveInvBtn.DoClick = function()
+		local steamID = steamIDEntry:GetValue():Trim()
+		if steamID == '' then return end
+		local item = getItemData()
+		if item.icon then item.icon = isstring(item.icon) and item.icon or (item.icon:GetName() .. '.png') end
+		netstream.Start('octoinv.giveBySteamID', steamID, 'inv', item)
+		octolib.notify.show('Предмет выдан в инвентарь')
+	end
+
+	local giveStorageBtn = givePan:Add 'DButton'
+	giveStorageBtn:Dock(LEFT)
+	giveStorageBtn:DockMargin(5,0,0,0)
+	giveStorageBtn:SetWide(100)
+	giveStorageBtn:SetText('В хранилище')
+	giveStorageBtn.DoClick = function()
+		local steamID = steamIDEntry:GetValue():Trim()
+		if steamID == '' then return end
+		local item = getItemData()
+		if item.icon then item.icon = isstring(item.icon) and item.icon or (item.icon:GetName() .. '.png') end
+		netstream.Start('octoinv.giveBySteamID', steamID, 'storage', item)
+		octolib.notify.show('Предмет выдан в хранилище')
+	end
+
 	function butAdd:DoClick()
 		local item = getItemData()
 		if item.icon and not isstring(item.icon) then item.icon = item.icon:GetName() .. '.png' end

@@ -1,21 +1,13 @@
 local bigMoney = 2000000
 
 local function notify(text)
-	if not CFG.webhooks.unban then return end
-
-	octoservices:post('/discord/webhook/' .. CFG.webhooks.unban, {
-		username = GetHostName(),
-		content = text,
-	})
+	if not CFG.webhooks.admin then return end
+	octolib.webhook.message(CFG.webhooks.admin, text, GetHostName())
 end
 
 local function notifyChelog(text)
-	if not CFG.webhooks.chelog then return end
-
-	octoservices:post('/discord/webhook/' .. CFG.webhooks.chelog, {
-		username = GetHostName(),
-		content = text,
-	})
+	if not CFG.webhooks.cheats then return end
+	octolib.webhook.message(CFG.webhooks.cheats, text, GetHostName())
 end
 
 hook.Add('atm.withdraw', 'antiexp.notify', function(ply, amount)

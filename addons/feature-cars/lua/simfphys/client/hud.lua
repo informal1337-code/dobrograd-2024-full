@@ -555,11 +555,7 @@ local function updateMirror(pos, angOff, veh, w, h)
 
 	local oldHideHead = dbgView.headHidden
 	dbgView.hideHead(false)
-	
-	if ply.SetMaskVisible then
-		ply:SetMaskVisible(true)
-	end
-	
+	ply:SetMaskVisible(true)
 	local oldRT = cmod:GetTexture('$fbtexture')
 	cmod:SetTexture('$fbtexture', rts[key])
 	render.PushRenderTarget(rts[key])
@@ -575,11 +571,7 @@ local function updateMirror(pos, angOff, veh, w, h)
 	if not oldRT then return rts[key] end
 	cmod:SetTexture('$fbtexture', oldRT)
 	dbgView.hideHead(oldHideHead)
-	
-	if ply.SetMaskVisible then
-		ply:SetMaskVisible(false)
-	end
-	
+	ply:SetMaskVisible()
 	return rts[key]
 
 end

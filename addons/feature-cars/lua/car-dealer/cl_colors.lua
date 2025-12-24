@@ -23,7 +23,7 @@ netstream.Hook('car-dealer.firstColor', function(id, colors)
 	local function paintFunc(self, w, h)
 		draw.NoTexture()
 		surface.SetDrawColor(self.col.r, self.col.g, self.col.b)
-		draw.Circle(w/2, h/2, 32, 64)
+		draw.Circle(w / 2, h / 2, 32, 64)
 	end
 	local function clickFunc(self)
 		netstream.Start('car-dealer.firstColor', id, self.index)

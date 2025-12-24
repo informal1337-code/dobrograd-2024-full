@@ -319,10 +319,10 @@ hook.Add('OnEntityCreated', 'simfphys_damagestuff', function(ent)
 	end
 end)
 
-local DAMAGE_COOLDOWN = 0.5
-local DAMAGE_MULTIPLIER = 0.1
-local HIT_RADIUS = 150
-local MIN_SPEED = 10
+local DAMAGE_COOLDOWN = 0.5 -- Задержка между уронами (в секундах)
+local DAMAGE_MULTIPLIER = 0.1 -- Множитель урона от скорости
+local HIT_RADIUS = 150 -- Радиус обнаружения столкновений
+local MIN_SPEED = 10 -- Минимальная скорость для нанесения урона
 
 local lastDamageTimes = {}
 

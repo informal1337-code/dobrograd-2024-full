@@ -66,7 +66,7 @@ gAC.config.IMMUNE_USERS = { -- Set all the people you want to be immune to detec
 }
 
 --[[ DISCORD WEBHOOK SETTINGS ]]--
-    gAC.config.ENABLE_DISCORD_WEBHOOK = true
+    gAC.config.ENABLE_DISCORD_WEBHOOK = false
     gAC.config.DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1433085379535306794/VabKTibGjGCE0MFIH13BbicU8dQe2FKNNMcpBS94kY8GLrx6necY27XbuLMNPgIHhgRG" -- To find this, right click a discord channel, go to "Edit Channel", click "Webhooks" and then create a new webhook. Copy and paste the URL here.
 --[[ DISCORD WEBHOOK SETTINGS END ]]--
 
@@ -255,7 +255,7 @@ gAC.config.IMMUNE_USERS = { -- Set all the people you want to be immune to detec
 
         Your key should look something like this: 1369GJ41970G26891B26AGGFAD526B49
     ]]--
-    gAC.config.STEAM_API_KEY = "" -- Steam API key for the family sharing module.
+    gAC.config.STEAM_API_KEY = "EA5C29DA57A70E2DAE67A680BA0616AC" -- Steam API key for the family sharing module.
 
     gAC.config.ENABLE_FAMILY_SHARE_CHECKS = true -- Whether or not to check if the player is using a family shared account.
 

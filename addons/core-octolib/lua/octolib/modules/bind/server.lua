@@ -1,12 +1,15 @@
 octolib = octolib or {}
 octolib.bind = octolib.bind or {}
 
+util.AddNetworkString('octolib.bind.set')
 util.AddNetworkString('octolib.bind.sync')
 
 function octolib.bind.sync(ply)
-    net.Start('octolib.bind.sync')
-    net.WriteTable(octolib.bind.cache or {})
-    net.Send(ply)
+    octolib.bind.load(ply:SteamID(), function(binds)
+        net.Start('octolib.bind.sync')
+        net.WriteTable(binds)
+        net.Send(ply)
+    end)
 end
 
 hook.Add('PlayerInitialSpawn', 'octolib.bind', function(ply)
@@ -18,9 +21,9 @@ hook.Add('PlayerInitialSpawn', 'octolib.bind', function(ply)
 end)
 
 function octolib.bind.save(steamID, binds)
-        octolib.db:PrepareQuery([[
-        INSERT INTO player_binds (steamid, binds, server_group) 
-        VALUES (?, ?, ?) 
+    octolib.db:PrepareQuery([[
+        INSERT INTO player_binds (steamid, binds, server_group)
+        VALUES (?, ?, ?)
         ON DUPLICATE KEY UPDATE binds = ?, updated_at = NOW()
     ]], {
         steamID,
@@ -32,7 +35,7 @@ end
 
 function octolib.bind.load(steamID, callback)
     octolib.db:PrepareQuery([[
-        SELECT binds FROM player_binds 
+        SELECT binds FROM player_binds
         WHERE steamid = ? AND server_group = ?
     ]], {
         steamID,
@@ -47,36 +50,36 @@ function octolib.bind.load(steamID, callback)
     end)
 end
 
-
 net.Receive('octolib.bind.set', function(len, ply)
-    local id = net.ReadUInt(8)
-    local button = net.ReadUInt(8)
-    local action = net.ReadString()
-    local data = net.ReadString()
-    local on = net.ReadString()
+    octolib.bind.load(ply:SteamID(), function(binds)
+        binds = binds or {}
+        local id = net.ReadUInt(8)
+        local button = net.ReadUInt(8)
+        local action = net.ReadString()
+        local data = net.ReadString()
+        local on = net.ReadString()
 
-    -- if button = 0, значит это удаление
-    if button == 0 then
-
-        if id > 0 then
-            table.remove(octolib.bind.cache, id)
-        end
-    else
-        local bindData = {
-            button = button,
-            action = action,
-            data = util.JSONToTable(data) or {},
-            on = on
-        }
-
-        if id == 0 then
-            table.insert(octolib.bind.cache, bindData)
+        -- if button = 0, значит это удаление
+        if button == 0 then
+            if id > 0 then
+                table.remove(binds, id)
+            end
         else
-            octolib.bind.cache[id] = bindData
+            local bindData = {
+                button = button,
+                action = action,
+                data = util.JSONToTable(data or '{}') or {},
+                on = on
+            }
+
+            if id == 0 then
+                table.insert(binds, bindData)
+            else
+                binds[id] = bindData
+            end
         end
-    end
 
-    octolib.bind.save(ply:SteamID(), octolib.bind.cache)
-
-    octolib.bind.sync(ply)
+        octolib.bind.save(ply:SteamID(), binds)
+        octolib.bind.sync(ply)
+    end)
 end)

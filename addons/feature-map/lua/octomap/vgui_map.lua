@@ -13,7 +13,7 @@ File Path:   addons/feature-map/lua/octomap/vgui_map.lua
 local config = octomap.config
 
 local PANEL = {}
---333
+
 function PANEL:Init()
 
 	self:Dock(FILL)

@@ -13,7 +13,6 @@ ENT.Physics = true
 
 function ENT:Initialize()
 
-	-- self:SetModel(self.Model)
 	self:SetLocked(true)
 	self:PhysicsInit(SOLID_VPHYSICS)
 	self:SetMoveType(MOVETYPE_VPHYSICS)
@@ -53,7 +52,6 @@ function ENT:LoadInv()
 		return self:Remove()
 	end
 
-	-- prevent duplicating (just in case)
 	for i, ent in ipairs(ents.FindByClass('octoinv_storage')) do
 		if ent ~= self and ent.steamID == self.steamID then
 			return self:Remove()
@@ -135,7 +133,6 @@ function ENT:Save(callback)
 			SET storage = ?
 			WHERE steamID = ?
 	]], { pon.encode(inv), steamID }, function(q, st, res)
-		-- octoinv.msg((st and 'Saved storage for ' or 'Failed to save storage for ') .. steamID)
 		if not st then
 			octoinv.msg(res)
 		end
@@ -206,7 +203,6 @@ function octoinv.takeItemFromStorage(ply, classOrID, amountOrData)
 
 		octoinv.getStorageData(ply):Then(function(storage)
 			if isnumber(classOrID) then
-				-- it's non-stackable item with data to validate
 				local item = storage.items[classOrID]
 				if not item or (amountOrData and table.Count(octolib.table.diff(item, amountOrData)) > 0) then
 					return rej('cannot find matching item in storage')
@@ -221,7 +217,6 @@ function octoinv.takeItemFromStorage(ply, classOrID, amountOrData)
 					res()
 				end
 			else
-				-- it's stackable item with amount to validate
 				local item, id
 				for _id, _item in ipairs(storage.items) do
 					if _item.class == classOrID then
@@ -238,7 +233,7 @@ function octoinv.takeItemFromStorage(ply, classOrID, amountOrData)
 
 				if IsValid(ply.storage) then
 					local taken = ply.storage.inv.conts.storage:TakeItem(classOrID, amount)
-					if taken < amount then return rej('cannot found enough items of this class') end -- just in case
+					if taken < amount then return rej('cannot found enough items of this class') end
 					res()
 				else
 					item.amount = item.amount - amount
@@ -253,12 +248,6 @@ function octoinv.takeItemFromStorage(ply, classOrID, amountOrData)
 end
 
 hook.Add('PlayerInitialSpawn', 'octoinv.storage', function(ply)
-
-	-- for i, ent in ipairs(ents.FindByClass('octoinv_storage')) do
-	--	 if ent.steamID == ply:SteamID() then
-	--		 ent:LoadInv()
-	--	 end
-	-- end
 
 end)
 
@@ -293,31 +282,29 @@ end)
 
 local storageModels = {
     {
-        name = "Металлический ящик",
-        model = "models/props_junk/wood_crate001a.mdl",
-        icon = "icon16/box.png"
+        name = 'Металлический ящик',
+        model = 'models/props_junk/wood_crate001a.mdl',
     },
     {
-        name = "Металлический шкаф", 
-        model = "models/props_wasteland/controlroom_storagecloset001a.mdl",
-        icon = "icon16/door.png"
+        name = 'Металлический шкаф', 
+        model = 'models/props_wasteland/controlroom_storagecloset001a.mdl',
     },
     {
-        name = "Сейф",
-        model = "models/props_lab/huladoll.mdl",
-        icon = "icon16/money.png"
+        name = 'Сейф',
+        model = 'models/props_lab/huladoll.mdl',
     },
     {
-        name = "Деревянный сундук",
-        model = "models/props/de_inferno/crate_fruit_break_gib2.mdl",
-        icon = "icon16/application_view_tile.png"
+        name = 'Деревянный сундук',
+        model = 'models/props/de_inferno/crate_fruit_break_gib2.mdl',
     }
 }
 
-local function spawnStorage(ply, modelData)
+local function spawnStorage(ply, modelIndex)
+    local modelData = storageModels[modelIndex]
     if not IsValid(ply) or not modelData then return end
-    
+
     local ent = ents.Create 'octoinv_storage'
+
     ent.dt = ent.dt or {}
     ent.dt.owning_ent = ply
 
@@ -330,76 +317,6 @@ local function spawnStorage(ply, modelData)
     ent:LinkPlayer(ply)
 
     hook.Run('octoinv.storageSpawned', ply, ent)
-end
-
-local function openStorageMenu(ply)
-    if IsValid(ply.storageMenu) then
-        ply.storageMenu:Remove()
-    end
-
-    local frame = vgui.Create("DFrame")
-    frame:SetSize(400, 300)
-    frame:SetTitle("Выберите тип хранилища")
-    frame:Center()
-    frame:MakePopup()
-    frame:SetDeleteOnClose(true)
-    
-    ply.storageMenu = frame
-
-    local scroll = vgui.Create("DScrollPanel", frame)
-    scroll:Dock(FILL)
-    scroll:DockMargin(5, 5, 5, 5)
-
-    for _, modelData in ipairs(storageModels) do
-        local button = scroll:Add("DButton")
-        button:Dock(TOP)
-        button:DockMargin(0, 0, 0, 5)
-        button:SetTall(50)
-        button:SetText("")
-        
-        function button:Paint(w, h)
-            if self:IsHovered() then
-                surface.SetDrawColor(70, 130, 180, 100)
-                surface.DrawRect(0, 0, w, h)
-            end
-            
-            surface.SetDrawColor(255, 255, 255, 50)
-            surface.DrawOutlinedRect(0, 0, w, h)
-        end
-        
-        local icon = vgui.Create("DImage", button)
-        icon:SetSize(32, 32)
-        icon:SetPos(10, 9)
-        icon:SetImage(modelData.icon)
-        
-        local name = vgui.Create("DLabel", button)
-        name:SetPos(50, 15)
-        name:SetText(modelData.name)
-        name:SetFont("DermaDefaultBold")
-        name:SizeToContents()
-        
-        local modelPreview = vgui.Create("DLabel", button)
-        modelPreview:SetPos(50, 30)
-        modelPreview:SetText(modelData.model)
-        modelPreview:SetFont("DermaDefault")
-        modelPreview:SetColor(Color(200, 200, 200))
-        modelPreview:SizeToContents()
-        
-        function button:DoClick()
-            frame:Close()
-            spawnStorage(ply, modelData)
-        end
-    end
-    
-    local closeBtn = vgui.Create("DButton", frame)
-    closeBtn:Dock(BOTTOM)
-    closeBtn:SetTall(30)
-    closeBtn:SetText("Отмена")
-    closeBtn:DockMargin(0, 5, 0, 0)
-    
-    function closeBtn:DoClick()
-        frame:Close()
-    end
 end
 
 concommand.Add('dbg_storage', function(ply)
@@ -433,5 +350,15 @@ concommand.Add('dbg_storage', function(ply)
         return
     end
 
-    openStorageMenu(ply)
+    net.Start('octoinv.OpenStorageMenu')
+    net.Send(ply)
+end)
+
+util.AddNetworkString('octoinv.SpawnStorage')
+util.AddNetworkString('octoinv.OpenStorageMenu')
+
+net.Receive('octoinv.SpawnStorage', function(len, ply)
+    if not IsValid(ply) then return end
+    local modelIndex = net.ReadUInt(8)
+    spawnStorage(ply, modelIndex)
 end)

@@ -15,7 +15,7 @@ local noDragWeps = octolib.array.toKeys({'weapon_physgun', 'med_kit'})
 hook.Add('KeyPress', 'dbg-cuffs.drag', function(ply, key)
 
 	if key ~= IN_ATTACK then return end
-	if ply:InVehicle() or ply:IsGhost() or ply:IsHandcuffed() then return end
+	if ply:InVehicle() or ply:GetNetVar('Ghost', false) or ply:IsHandcuffed() then return end
 	local wep = ply:GetActiveWeapon()
 	if IsValid(wep) and noDragWeps[wep:GetClass()] then return end
 

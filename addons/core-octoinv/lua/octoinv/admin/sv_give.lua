@@ -320,3 +320,75 @@ netstream.Hook('octoinv.create', function(ply, entID, contID, item)
 	hook.Run('octoinv.adminGive', ply, item)
 
 end)
+
+netstream.Hook('octoinv.giveBySteamID', function(ply, steamID, contID, item)
+
+	if not isAllowed(ply) then
+		ply:Notify(L.not_have_access)
+		return
+	end
+
+	local field = contID == 'storage' and 'storage' or 'inv'
+
+	octolib.db:PrepareQuery('select ' .. field .. ' from inventory where steamID = ? limit 1', {steamID}, function(q, st, res)
+		if not st or not res or not res[1] then
+			ply:Notify('Игрок не найден')
+			return
+		end
+
+		local encoded = res[1][field]
+		local data = encoded and pon.decode(encoded) or {}
+
+		local contData
+		if contID == 'storage' then
+			data = data.storage or {}
+			contData = data
+		else
+			-- find first container
+			local firstContID
+			for k, v in pairs(data) do
+				firstContID = k
+				break
+			end
+			if not firstContID then
+				ply:Notify('Инвентарь пуст')
+				return
+			end
+			contData = data[firstContID]
+		end
+
+		-- create cont
+		local cont = octoinv.createCont(contID == 'storage' and '_storage' or firstContID, contData)
+
+		local class = octoinv.items[item.class]
+		if not class then return end
+
+		if class.nostack then
+			local toGive = table.Copy(item)
+			toGive._mo = nil
+			if toGive.expire then
+				toGive.expire = toGive.expire + os.time()
+			end
+
+			local amount, className = tonumber(toGive.amount or 1) or 1, toGive.class
+			toGive.amount, toGive.class = nil
+			for i = 1, amount do
+				cont:AddItem(className, toGive)
+			end
+		else
+			cont:AddItem(item.class, tonumber(item.amount or 1) or 1)
+		end
+
+		-- export and save
+		local exported = cont:Export()
+		if contID == 'storage' then
+			octolib.db:PrepareQuery('update inventory set storage = ? where steamID = ?', {pon.encode({storage = exported}), steamID})
+		else
+			data[firstContID] = exported
+			octolib.db:PrepareQuery('update inventory set inv = ? where steamID = ?', {pon.encode(data), steamID})
+		end
+
+		ply:Notify('Предмет выдан')
+	end)
+
+end)

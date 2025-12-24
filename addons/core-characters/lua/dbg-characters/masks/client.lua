@@ -1,5 +1,16 @@
 local angle_zero = Angle(0, 0, 0)
 
+function dbgChars.masks.getMaskSlots(maskID)
+	local slots = {}
+	local masks = LocalPlayer():GetNetVar('hMask') or {}
+	for slot, data in pairs(masks) do
+		if data.mask == maskID then
+			table.insert(slots, slot)
+		end
+	end
+	return slots
+end
+
 function dbgChars.masks.shouldShowPlayerMasks(ply)
 	if ply.masksVisible ~= nil then
 		return ply.masksVisible

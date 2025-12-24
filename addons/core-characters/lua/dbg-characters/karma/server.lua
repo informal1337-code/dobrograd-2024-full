@@ -64,10 +64,14 @@ function meta:AddKarma(amount, customMsg, noMultiply, force)
 	self:SetKarma(newKarma)
 
 	if amount < 0 then
-		self:Notify('warning', L.karma_notify:format(reason, newKarma))
-		timer.Start('karma_' .. self:SteamID())
+		octolib.notify.send(self, 'warning', L.karma_notify:format(reason, newKarma))
+		timer.Create('karma_' .. self:SteamID(), 20 * 60, 0, function()
+			if IsValid(self) and not self:IsAFK() then
+				self:AddKarma(1, table.Random(msgs.goodBoy))
+			end
+		end)
 	else
-		self:Notify('hint', L.karma_notify:format(reason, newKarma))
+		octolib.notify.send(self, 'hint', L.karma_notify:format(reason, newKarma))
 	end
 
 	hook.Run('dbg-karma.changed', self, newKarma, curKarma)
@@ -89,17 +93,12 @@ hook.Add('PlayerInitialSpawn', 'dbg.krama', function(ply)
 				MySQLite.SQLStr(ply:SteamID())
 			))
 
-			if CFG.webhooks.cheats then
-				octoservices:post('/discord/webhook/' .. CFG.webhooks.cheats, {
-					username = GetHostName(),
-					embeds = {{
-						title = 'Первый вход на сервер',
-						fields = {{
-							name = L.player,
-							value = ply:GetName() .. '\n[' .. ply:SteamID() .. '](' .. 'https://steamcommunity.com/profiles/' .. ply:SteamID64() .. ')',
-						}},
-					}},
-				})
+			if CFG.webhooks.main then
+				octolib.webhook.anticheat(CFG.webhooks.main,
+					'New Player Joined',
+					'Player joined the server for the first time',
+					ply
+				)
 			end
 		end
 
@@ -125,48 +124,8 @@ local function respawnMassfkVictim(steamID)
 	end)
 end
 
-hook.Add('PlayerDeath', 'dbg.karma', function(ply, wep, attacker)
-
-	if IsValid(attacker) and attacker:IsPlayer() then
-
-		if attacker ~= ply then
-			local wep = ply:GetActiveWeapon()
-			local wasDangerous =
-				CurTime() - (ply.lastAim or -20) < 20 or -- if victim didn't aim recently, get penalty
-				(IsValid(wep) and dbgWeaponGroups[wep:GetClass()] ~= 'allowAll') -- if victim didn't have gun, get penalty
-			local job = attacker:getJobTable()
-			if not job.noKarmaDamagePenalty or not wasDangerous then
-				attacker:AddKarma(-5, L.karma_kill)
-
-				-- if victim did not intend to fight back, cache kill as massfk attempt
-				if not wasDangerous and not attacker:IsAdmin() then
-					attacker.massFKcache = attacker.massFKcache or {}
-					attacker.massFKcache[#attacker.massFKcache + 1] = ply:SteamID()
-
-					local timerName = 'antiMassFK_' .. attacker:SteamID()
-					if #attacker.massFKcache >= 3 then
-						attacker:BanEverywhere(0, 'MassFK')
-
-						local massFKcache = attacker.massFKcache
-						timer.Simple(1, function() -- wait a bit to execute after all death handlers
-							for _, sID in ipairs(massFKcache) do
-								respawnMassfkVictim(sID)
-							end
-						end)
-						timer.Remove(timerName)
-					else
-						timer.Create(timerName, 120, 1, function()
-							attacker.massFKcache = nil
-						end)
-					end
-				end
-			end
-		elseif not attacker.HungerDeath then
-			attacker:AddKarma(-5, L.karma_suicide)
-		end
-	end
-
-end)
+-- Карма за убийство теперь снимается только когда жертва действительно умерла (стала призраком)
+-- Логика перенесена в ghosts/server.lua в функцию checkNearDeath
 
 hook.Add('EntityTakeDamage', 'dbg.karma', function(ply, dmg)
 

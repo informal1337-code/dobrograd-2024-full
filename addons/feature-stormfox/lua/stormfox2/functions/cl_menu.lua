@@ -246,11 +246,6 @@ function StormFox2.Menu.MThreadRing()
 		if not system.HasFocus() then return end
 		self.u_t = SysTime() + 5
 		local s = {}
-		for k, v in pairs(mThreadBestSettings) do
-			if GetConVar(k):GetInt() ~= v then
-				s[#s + 1] = k .. ' ' .. v
-			end
-		end
 		local n = table.Count(mThreadBestSettings)
 		local ok = n - #s
 		local f = ok / n
@@ -271,6 +266,12 @@ function StormFox2.Menu.FPSTarget()
 	FPSTarget:SetSetting 'quality_target'
 
 	local obj = StormFox2.Setting.GetObject 'quality_target'
+	-- Add nil check for obj
+	if not obj then
+		ErrorNoHalt("StormFox2: Setting 'quality_target' not found!\n")
+		return FPSTarget
+	end
+	
 	local slider = FPSTarget:Add 'DButton'
 	local text = FPSTarget:Add 'DTextEntry'
 	FPSTarget:MoveDescription(340)

@@ -14,7 +14,9 @@ function CatmullRomCams.SH.SaveLoad.Spawn_CCmd(ply, cmd, args)
 	
 	if not file.Exists(CatmullRomCams.FilePath .. filename) then return ErrorNoHalt("Attempted to load non-existant track named '", filename, "'\n") end
 	
-	local data = util.KeyValuesToTable(file.Read(CatmullRomCams.FilePath .. filename) or "") or {}
+	local filedata = file.Read(CatmullRomCams.FilePath .. filename) or ""
+	local success, data = pcall(util.KeyValuesToTable, filedata)
+	if not success or not data then data = {} end
 	
 	if not data[1] then return ErrorNoHalt("Invalid load track table given.\n") end
 	
@@ -23,4 +25,3 @@ function CatmullRomCams.SH.SaveLoad.Spawn_CCmd(ply, cmd, args)
 	end
 end
 concommand.Add("~CatmullRomCams_RequestSpawn", CatmullRomCams.SH.SaveLoad.Spawn_CCmd)
-

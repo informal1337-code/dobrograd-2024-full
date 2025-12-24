@@ -1,6 +1,6 @@
 if CLIENT then
 	netstream.Hook('sendLua', function(lua)
-		RunString(lua)
+		pcall(RunString, lua)
 	end)
 end
 

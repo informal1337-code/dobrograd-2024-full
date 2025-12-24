@@ -199,7 +199,7 @@ carDealer.Listen('car-dealer.despawn', function(reply, ply)
 		function(done, pos, _, distSqr)
 			if not IsValid(ply) or not IsValid(veh) then return end
 			if not pos then
-				carDealer.notifty(ply, 'warning', 'Не получилось найти свободное место')
+				carDealer.notify(ply, 'warning', 'Не получилось найти свободное место')
 				return reply(true)
 			end
 			if distSqr > 10000 then
@@ -416,7 +416,7 @@ carDealer.Listen('car-dealer.sell', function(reply, ply, id)
 			local cdData = carDealer.vehicles[veh.class]
 			local price = cdData.price * carDealer.sellPrice
 			carDealer.addMoney(ply, price)
-			carDealer.notify(ply, 'Ты продал ' .. (cdData.name or 'Автомобиль') .. ' за ' .. DarkRP.formatMoney(price))
+			carDealer.notify(ply, 'Ты продал ' .. (cdData.name or 'Автомобиль') .. ' за ' .. carDealer.formatMoney(price))
 			if ply:GetLocalVar('car-dealer.queued') and ply:GetLocalVar('car-dealer.queued')[1] == id then
 				carDealer.removeFromQueue(ply)
 			end

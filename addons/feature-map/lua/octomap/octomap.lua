@@ -13,7 +13,7 @@ File Path:   addons/feature-map/lua/octomap/octomap.lua
 octomap = octomap or {}
 
 octolib.shared('config/octomap')
---ss
+
 octolib.client('cl_octomap')
 
 octolib.client('meta_marker')

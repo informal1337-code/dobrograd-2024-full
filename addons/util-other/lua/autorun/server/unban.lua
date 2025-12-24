@@ -87,13 +87,11 @@ local function notifyDiscord(admin, sid, ban, reason)
 				}
 			end
 
-			if CFG.webhooks.unban then
-				octoservices:post('/discord/webhook/' .. CFG.webhooks.unban, {
+			if CFG.webhooks.admin then
+				octolib.webhook.send(CFG.webhooks.admin, {
 					content = permanent and CFG.adminMention or nil,
-					embeds = { embed },
-				}):Catch(function(err)
-					octolib.msg('Error getting Steam data: %s', err)
-				end)
+					embeds = {embed}
+				})
 			end
 		end,
 	})

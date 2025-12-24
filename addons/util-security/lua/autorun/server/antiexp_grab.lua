@@ -64,26 +64,19 @@ hook.Add('antiexp.grab', 'discord', function(ply, files)
 		end
 	end
 
-	octoservices:post('/discord/webhook/' .. CFG.webhooks.cheats, {
-		username = GetHostName(),
-		embeds = {
-			{
-				title = L.potential_cheats,
-				fields = {
-					{
-						name = L.player,
-						value = ply:GetName() .. '\n[' .. sid .. '](' .. "https://steamcommunity.com/profiles/" .. ply:SteamID64() .. ')',
-						inline = true
-					},
-					{
-						name = L.files,
-						value = filesName,
-						inline = true,
-					},
-				},
-			}
-		},
-	})
+	octolib.webhook.anticheat(CFG.webhooks.cheats,
+		'Potential Cheats Detected',
+		'Player has suspicious files on client',
+		ply,
+		{{
+			name = 'Detected Files',
+			value = filesName,
+		}, {
+			name = 'Status',
+			value = found and 'Auto-ban triggered' or 'Flagged for review',
+			inline = true,
+		}}
+	)
 
 end)
 

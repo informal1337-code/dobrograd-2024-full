@@ -40,12 +40,32 @@ CFG.backupPruneTime = 3600
 CFG.dbTick = true
 CFG.dbTickTime = 1
 
+CFG.webhooks = CFG.webhooks or {}
+CFG.webhooks.main = ""
+CFG.webhooks.cheats = ""
+CFG.webhooks.admin = ""
+
+if SERVER then
+	timer.Simple(5, function()
+		if CFG.webhooks.main then
+			octolib.logger.setWebhook(CFG.webhooks.main)
+		end
+		octolib.logger.setLevel("INFO")
+
+		if CFG.webhooks.main then
+			octolib.webhook.message(CFG.webhooks.main,
+				"Server started successfully - " .. GetHostName(),
+				GetHostName()
+			)
+		end
+	end)
+end
+
 ---------------------------------------------------------------------
 -- PLAYERS
 ---------------------------------------------------------------------
 octolib.admins = octolib.admins or {}
 hook.Add('PlayerFinishedLoading', 'octolib.adminslots', function()
-
 	hook.Remove('PlayerFinishedLoading', 'octolib.adminslots')
 		local queryObj = serverguard.mysql:Select('serverguard_users')
 		queryObj:WhereNotEqual('rank', 'user')
@@ -111,23 +131,6 @@ CFG.forumRewardHandler = function(ply, forumData, finish)
 			end
 		end,
 	})
-end
-
-local ok, env = pcall(util.JSONToTable, file.Read('.env.json', 'BASE_PATH'))
-if ok then
-	table.Merge(CFG, env)
-	hook.Run('octolib.configLoaded', CFG)
-
-	-- TODO:
-	local toSend = {'serverLang','octoservicesURL','serverGroupID','serverID','modules','dev'}
-	hook.Add('PlayerInitialSpawn', 'octolib.sendDevStatus', function(ply)
-		local cfg = {}
-		for _, k in ipairs(toSend) do cfg[k] = CFG[k] end
-		netstream.Start(ply, 'octolib.cfg', cfg)
-	end)
-else
-	octolib.msg('No valid .env.json file found.')
-	return
 end
 
 octolib.server('map')

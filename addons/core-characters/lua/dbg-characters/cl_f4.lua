@@ -199,7 +199,7 @@ hook.Add('octogui.f4-tabs', 'dbg-characters', function()
 		order = 10,
 		icon = Material('octoteam/icons/man_m.png'),
 		build = function(frame)
-			dbgChars.fixConVars()
+			if dbgChars.fixConVars then dbgChars.fixConVars() end
 
 			frame:SetSize(800, 600)
 			local ply = LocalPlayer()
@@ -831,7 +831,6 @@ hook.Add('octogui.f4-tabs', 'dbg-characters', function()
 		show = function(frame, st)
 			if not st then return end
 
-			dbgChars.fixConVars()
 			frame:UpdateFromConVars()
 		end,
 	})

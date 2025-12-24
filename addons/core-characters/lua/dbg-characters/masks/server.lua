@@ -1,15 +1,25 @@
 local plyMeta = FindMetaTable 'Player'
 
+function plyMeta:GetMaskId(slot)
+	local masks = self:GetNetVar('hMask') or {}
+	local mdat = masks[slot]
+	return mdat and mdat.mask or nil
+end
+
+function plyMeta:CanUnmask()
+	return not (self:isArrested() or self:GetNetVar('wanted'))
+end
+
 function plyMeta:Unmask()
 	local curMasks = self:GetNetVar('hMask')
 	if not curMasks or table.IsEmpty(curMasks) then 
 		self:Notify('warning', 'На тебе нет масок')
-		return 
+		return
 	end
 
-	if not self:CanUnmask() then 
+	if not self:CanUnmask() then
 		self:Notify('warning', 'Ты не можешь снять маску сейчас')
-		return 
+		return
 	end
 
 	if not self:Alive() or self:IsGhost() then
@@ -102,7 +112,7 @@ hook.Add('PlayerDeath', 'dbg-masks', function(ply)
 
 	ply:SetNetVar('hMask', nil)
 	ply:SetDBVar('hMask', nil)
-	
+
 	if ply.maskExpireUid then
 		for slot, timerId in pairs(ply.maskExpireUid) do
 			timer.Remove(timerId)

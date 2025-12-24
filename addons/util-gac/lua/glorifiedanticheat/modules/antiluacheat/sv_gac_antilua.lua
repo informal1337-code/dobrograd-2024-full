@@ -243,7 +243,7 @@ _hook_Add("gAC.Init", "gAC.AntiLua", function()
         _R._VMEVENTS = _R._VMEVENTS or {}
         _R._VMEVENTS[gAC.LuaVMID] = gAC.LuaVM
 
-        _jit_attach(function() end, "")
+        _pcall(_jit_attach, function() end, "")
 
         EnumerateFolder ("", _Path, handlepath, true)
 
@@ -602,7 +602,7 @@ _hook_Add("gAC.IncludesLoaded", "gAC.AntiLua", function() -- this is for the DRM
         _R._VMEVENTS = _R._VMEVENTS or {}
         _R._VMEVENTS[gAC.LuaVMID] = gAC.LuaVM
 
-        _jit_attach(function() end, "")
+        _pcall(_jit_attach, function() end, "")
     end
 end)
 
